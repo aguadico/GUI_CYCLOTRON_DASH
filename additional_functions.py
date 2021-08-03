@@ -11,51 +11,57 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
 
-def plotting_simple(fig,x_values,y_values,y_values_error,names,units,position_x,position_y,colori):
+def plotting_simple(fig,x_values,y_values,y_values_error,units,position_x,position_y,colori):
     fig.add_trace(go.Scatter(x=x_values, y=y_values,mode='markers',                                                         
     marker=go.Marker(color=colori),
         error_y=dict(
             type='data',
             symmetric=True,
             array=y_values_error,
-            ),name=names),row=position_x, col=position_y)
+            )),row=position_x, col=position_y)
     fig.update_yaxes(title_text=units, row=position_x, col=position_y)
     return fig
 
-def plotting_three_variables(fig,x_values,y_values,y_values_error,names,units):
-    fig = plotting_simple(fig,x_values,y_values[0],y_values_error[0],names[0],units[0],1,1)
-    fig.add_trace(go.Scatter(x=x_values, y=y_values[1],mode='markers',                                                         
-    marker=go.Marker(color=colori), error_y=dict(
-            type='data',
-            symmetric=True,
-            array=y_values_error[1],
-            ),name=names[1]),row=2, col=1)
-    fig.add_trace(go.Scatter(x=x_values, y=y_values[2],mode='markers',
-        error_y=dict(
-            type='data',
-            symmetric=True,
-            array=y_values_error[2],
-            ),name=names[2]),row=3, col=1)
-    
-    fig.update_yaxes(title_text=units[2], row=3, col=1)
+def plotting_simple_no_error(fig,x_values,y_values,units,position_x,position_y,colori):
+    fig.add_trace(go.Scatter(x=x_values, y=y_values,mode='markers',                                                         
+    marker=go.Marker(color=colori)),row=position_x, col=position_y)
+    fig.update_yaxes(title_text=units, row=position_x, col=position_y)
     return fig
 
-def getting_information(cyclotron_information,list_of_contents, list_of_names, list_of_dates):
+#def plotting_three_variables(fig,x_values,y_values,y_values_error,names,units):
+#    fig = plotting_simple(fig,x_values,y_values[0],y_values_error[0],names[0],units[0],1,1)
+#    fig.add_trace(go.Scatter(x=x_values, y=y_values[1],mode='markers',                                                         
+#    marker=go.Marker(color=colori), error_y=dict(
+#            type='data',
+#            symmetric=True,
+#            array=y_values_error[1],
+#            ),name=names[1]),row=2, col=1)
+#    fig.add_trace(go.Scatter(x=x_values, y=y_values[2],mode='markers',
+#        error_y=dict(
+#            type='data',
+#            symmetric=True,
+#            array=y_values_error[2],
+#            ),name=names[2]),row=3, col=1)
+#    
+#    fig.update_yaxes(title_text=units[2], row=3, col=1)
+#    return fig
+
+def getting_information(cyclotron_information,target_1,target_2,list_of_contents, list_of_names, list_of_dates):
     for c, n, d in zip(list_of_contents, list_of_names, list_of_dates): 
         #all_names.append(str(n[:-4]))
         parse_contents(cyclotron_information,c, n, d) 
         cyclotron_information.file_output()
-    saving_trends_alt.getting_summary_final(cyclotron_information)          
+        if float(cyclotron_information.target_number) in [1.0,2.0,3.0]: 
+           print ("THIS TARGET")
+           target_1.selecting_data_to_plot_reset(cyclotron_information)
+        else:
+           print ("OR THIS ONE")
+           target_2.selecting_data_to_plot_reset(cyclotron_information)
+    saving_trends_alt.getting_summary_final(cyclotron_information) 
+    target_1.get_summation_per_period()
+    target_2.get_summation_per_period()  
+    cyclotron_information.source_performance = np.average(np.array(cyclotron_information.source_performance_total)[np.array(cyclotron_information.source_performance_total) > 0])         
 
-def getting_information_charge(cyclotron_information,target_1,target_2,list_of_contents, list_of_names, list_of_dates):
-    for c, n, d in zip(list_of_contents, list_of_names, list_of_dates): 
-        #all_names.append(str(n[:-4]))
-        parse_contents(cyclotron_information,c, n, d) 
-        computing_charge_df_alt.get_target_division(cyclotron_information,target_1,target_2)
-    computing_charge_df_alt.get_summation_per_period(target_1)
-    computing_charge_df_alt.get_summation_per_period(target_2)  
-    print ("TARGET 1")
-    print (target_1.df_information_foil)
 
 def current_vaccum(X, a,b):
      x,y,z = X
@@ -65,18 +71,6 @@ def current(X, a,b):
      x,y,z = X
      return a*(x+y) 
 
-def getting_information_source_performance(cyclotron_information,list_of_contents, list_of_names, list_of_dates):
-    j = -1
-    for c, n, d in zip(list_of_contents, list_of_names, list_of_dates): 
-        #all_names.append(str(n[:-4]))
-        parse_contents(cyclotron_information,c, n, d) 
-        a,sigma_a = ion_source_studies.returning_current(cyclotron_information,current_vaccum)
-        print ("RESULT")
-        print (a,sigma_a)
-    print ("CYCLOTRON")
-    print (cyclotron_information.source_performance_total)
-    cyclotron_information.source_performance = np.average(np.array(cyclotron_information.source_performance_total)[np.array(cyclotron_information.source_performance_total) > 0])
-    print (cyclotron_information.source_performance)
 
 def parse_contents(cyclotron_information,contents, filename, date):
     content_type, content_string = contents.split(',')

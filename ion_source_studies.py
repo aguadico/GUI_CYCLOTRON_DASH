@@ -73,7 +73,7 @@ def returning_current(cyclotron_data,funct_fit):
 		sigma_x = 0
 	cyclotron_data.source_performance_total.append(x)
 	cyclotron_data.source_performance_total_error.append(sigma_x)
-	return x,sigma_x
+
 
 def plotting():
 	f, ax = plt.subplots(figsize =(9, 8))
