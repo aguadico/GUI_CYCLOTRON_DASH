@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from scipy.optimize import curve_fit
 import seaborn as sns
 import matplotlib.pyplot as plt
-def curent(X, a):
+def current(X, a):
      x,y,z = X
      return a*(x+y) 
 def current_vaccum(X, a,b):
@@ -50,7 +50,7 @@ def returning_current(cyclotron_data,funct_fit):
 	   # GET PROBE CURRENT AND ISOCHRONISM TO COMPUTE TRANSMISSION
 	   probe_current = getattr(data_df,"Probe_I").astype(float)[(data_df.Probe_I.astype(float) > 14) & (data_df.Probe_I.astype(float) < 16)]
 	   df_isochronism = getting_subsystems_data_alt.get_isochronism(data_df)
-	   T_1 = np.average(np.max(df_isochronism.Foil_I)/probe_current)
+	   T_1 = np.average(np.max(df_isochronism.Foil_I[:-1].astype(float))/probe_current)
 	   sigma_T_1 = np.std(np.max(df_isochronism.Foil_I)/probe_current)
 	   # transmission 2 (from foil to target) and its associated error
 	   T_2 = np.average((df_summary.I_TARGET + df_summary.I_COLLIMATOR)/df_summary.I_FOIL)
