@@ -17,8 +17,7 @@ def get_summary_ion_source(self):
     float(max_source_current),float(min_source_current),float(ave_source_current),float(std_source_current),
     float(max_source_voltage),float(min_source_voltage),float(ave_source_voltage),float(std_source_voltage),
     float(max_gas_flow),
-    float(max_ratio_current),float(min_ratio_current),float(ave_ratio_current),float(std_ratio_current),float(self.source_performance)
-    ,float(self.source_performance_std)]]
+    float(max_ratio_current),float(min_ratio_current),float(ave_ratio_current),float(std_ratio_current)]]
     df_source_i = pd.DataFrame(df_source_values,columns=columns_names.COLUMNS_SOURCE)
     self.df_source = self.df_source.append(df_source_i,ignore_index=True)
 
@@ -50,7 +49,27 @@ def get_summary_magnet(self):
     magnet_current = self.df_subsystem_magnet.Magnet_I
     foil_number = np.average((self.df_subsystem_magnet.Foil_No))
     ave_magnet_current,std_magnet_current,max_magnet_current,min_magnet_current = getting_subsystems_data_alt.get_statistic_values(magnet_current)
-    magnet_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,float(max_magnet_current),float(min_magnet_current),float(ave_magnet_current),float(std_magnet_current)]]
+    start_isochronism = np.min(self.df_isochronism.Magnet_I)
+    end_isochronism = np.max(self.df_isochronism.Magnet_I)
+    iso_average = np.average([start_isochronism,end_isochronism])
+    selected_value = self.df_isochronism.Magnet_I.iloc[-1]
+    selected_value_rel = 50/(iso_average/selected_value)  
+    magnet_current = pd.concat([self.time_all,self.magnet_current_total],axis=1,keys=["Time","Current_I"])
+    time_values = magnet_current.drop_duplicates(subset="Current_I").Time.astype(str)
+    initial_time = time_values.iloc[0]
+    if len(magnet_current.drop_duplicates(subset="Current_I").Time) > 1:  
+        final_time = time_values.iloc[1]
+        total_time = [initial_time,final_time]   
+        initial_time_seconds =  (int(total_time[0].split(":")[0])*3600+int(total_time[0].split(":")[1])*60+int(total_time[0].split(":")[2])) 
+        if int(total_time[0].split(":")[0]) > int(total_time[-1].split(":")[0]):
+            final_time_seconds = (int(total_time[-1][0])+24)*3600+int(total_time[-1].split(":")[1])*60+int(total_time[-1].split(":")[2])
+        elif int(total_time[0].split(":")[0]) <= int(total_time[-1].split(":")[0]):
+            final_time_seconds = (int(total_time[-1].split(":")[0])*3600+int(total_time[-1].split(":")[1])*60+int(total_time[-1].split(":")[2]))
+        delta_minutes = (final_time_seconds - initial_time_seconds)/60
+    elif len(magnet_current.drop_duplicates(subset="Current_I").Time) <= 1:
+        delta_minutes = 0
+    magnet_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,float(max_magnet_current),float(min_magnet_current),float(ave_magnet_current),float(std_magnet_current),
+    float(start_isochronism),float(end_isochronism),float(selected_value),float(selected_value_rel),float(delta_minutes)]]
     df_magnet_i = pd.DataFrame((magnet_values),columns=columns_names.COLUMNS_MAGNET)
     self.df_magnet = self.df_magnet.append(df_magnet_i,ignore_index=True)
     
@@ -70,22 +89,40 @@ def get_summary_rf(self):
     ave_reflected_power,std_reflected_power,max_reflected_power,min_reflected_power = getting_subsystems_data_alt.get_statistic_values(reflected_power)
     ave_flap1_pos,std_flap1_pos,max_flap1_pos,min_flap1_pos = getting_subsystems_data_alt.get_statistic_values(flap1_pos)
     ave_flap2_pos,std_flap2_pos,max_flap2_pos,min_flap2_pos = getting_subsystems_data_alt.get_statistic_values(flap2_pos)
-    ave_phase_load,std_phase_load,max_phase_load,min_phase_load = getting_subsystems_data_alt.get_statistic_values(flap2_pos)
+    ave_phase_load,std_phase_load,max_phase_load,min_phase_load = getting_subsystems_data_alt.get_statistic_values(flap2_pos)  
     rf_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,max_dee1_voltage,min_dee1_voltage,ave_dee1_voltage,std_dee1_voltage,max_dee2_voltage,min_dee2_voltage,ave_dee2_voltage,std_dee2_voltage,
-    max_forwarded_power,min_forwarded_power,ave_forwarded_power,std_forwarded_power,max_reflected_power,min_reflected_power,ave_reflected_power,std_reflected_power,max_phase_load,min_phase_load,ave_phase_load,std_phase_load,max_flap1_pos,min_flap1_pos,ave_flap1_pos,std_flap1_pos,
-    max_flap2_pos,min_flap2_pos,ave_flap2_pos,std_flap2_pos]]
+    max_forwarded_power,min_forwarded_power,ave_forwarded_power,std_forwarded_power,max_reflected_power,min_reflected_power,ave_reflected_power,std_reflected_power,max_phase_load,min_phase_load,ave_phase_load,std_phase_load,max_flap1_pos,
+    min_flap1_pos,ave_flap1_pos,std_flap1_pos,
+    max_flap2_pos,min_flap2_pos,ave_flap2_pos,std_flap2_pos,
+    self.sparks_number,self.distance_flap_1,self.resonance_speed_1,self.average_instant_speed_1,self.max_instant_speed_1,self.std_instant_speed_1,
+    self.distance_flap_2,self.resonance_speed_2,self.average_instant_speed_2,self.max_instant_speed_2,self.std_instant_speed_2]]
     df_rf_i = pd.DataFrame((rf_values),columns=columns_names.COLUMNS_RF)      
     self.df_rf = self.df_rf.append(df_rf_i,ignore_index=True)
  
 
 
 def get_summary_extraction(self):
+    #Aquí es donde tengo que extraer el número de target + numero de target
     carousel_position = self.df_subsystem_extraction.Extr_pos
     balance_position = self.df_subsystem_extraction.Balance
     foil_number = np.average((self.df_subsystem_extraction.Foil_No))
     ave_carousel_position,std_carousel_position, max_carousel_position, min_carousel_position = getting_subsystems_data_alt.get_statistic_values(carousel_position)
     ave_balance_position,std_balance_position, max_balance_position, min_balance_position = getting_subsystems_data_alt.get_statistic_values(balance_position)
-    extraction_values = [[np.float(int(self.file_number)),self.date_stamp,self.name,self.target_number,foil_number,max_carousel_position,min_carousel_position,ave_carousel_position,std_carousel_position,max_balance_position,min_balance_position,ave_balance_position,std_balance_position]]
+    print ("TARGET NUMBER")
+    print (self.target_number)
+    if float(self.target_number) <= 3:
+        carousel_number = 1
+    elif float(self.target_number)>3: 
+        carousel_number = 4
+    if ave_carousel_position/3 <= 10: 
+        position = 0
+    elif ((ave_carousel_position/3 > 10) & (ave_carousel_position/3 < 20)):
+        position = 1
+    elif ave_carousel_position/3 > 20:
+        position = 2
+    phys_number = carousel_number + position
+    print (phys_number)
+    extraction_values = [[np.float(int(self.file_number)),self.date_stamp,self.name,self.target_number,phys_number,foil_number,max_carousel_position,min_carousel_position,ave_carousel_position,std_carousel_position,max_balance_position,min_balance_position,ave_balance_position,std_balance_position]]
     df_extraction_i = pd.DataFrame((extraction_values),columns=columns_names.COLUMNS_EXTRACTION)      
     self.df_extraction = self.df_extraction.append(df_extraction_i,ignore_index=True)
 

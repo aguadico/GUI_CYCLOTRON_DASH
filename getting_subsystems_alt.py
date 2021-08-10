@@ -19,13 +19,12 @@ def get_subsystems_dataframe_vacuum(self):
     df_subsystem_vacuum = pd.concat(df_subsystem_values_vacuum,axis=1,keys=df_column_names_vacuum)
     return df_subsystem_vacuum
 
-
-
 def get_subsystems_dataframe_magnet(self):    
     df_column_names_magnet = ["Time","Foil_No","Magnet_I"]
     self.magnet_current = getting_subsystems_data_alt.get_magnet_parameters(self.file_df,self.max_current)
-    df_subsystem_valuesmagnet = [self.time,self.foil_number,self.magnet_current]
-    df_subsystem_magnet = pd.concat(df_subsystem_valuesmagnet,axis=1,keys=df_column_names_magnet)
+    self.magnet_current_total = getting_subsystems_data_alt.get_magnet_parameters(self.file_df,15)
+    df_subsystem_values_magnet = [self.time,self.foil_number,self.magnet_current]
+    df_subsystem_magnet = pd.concat(df_subsystem_values_magnet,axis=1,keys=df_column_names_magnet)
     return df_subsystem_magnet
 
 def get_subsystems_dataframe_rf(self):
@@ -38,11 +37,12 @@ def get_subsystems_dataframe_rf(self):
     return df_subsystem_rf
 
 def get_subsystems_dataframe_rf_sparks(self):
-    df_column_names_rf = ["Dee_1_kV","Dee_2_kV","RF_fwd_W","RF_refl_W","Phase_load","Flap1_pos","Flap2_pos"]
-    dee1_voltage,dee2_voltage = getting_subsystems_data_alt.get_rf_parameters_sparks(self.file_df,self.max_current) 
-    forwarded_power,reflected_power,phase_load = getting_subsystems_data_alt.get_rf_parameters_power_sparks(self.file_df,self.max_current)
-    flap1_pos,flap2_pos = getting_subsystems_data_alt.get_rf_parameters_flaps_sparks(self.file_df,self.max_current)
-    df_subsystem_values_rf = [dee1_voltage,dee2_voltage,forwarded_power,reflected_power,phase_load,flap1_pos,flap2_pos]
+    df_column_names_rf = ["Arc_I","Dee_1_kV","Dee_2_kV","RF_fwd_W","RF_refl_W","Phase_load","Flap1_pos","Flap2_pos"]
+    source_voltage,source_current,gas_flow = getting_subsystems_data_alt.get_source_parameters(self.file_df,-1)
+    dee1_voltage,dee2_voltage = getting_subsystems_data_alt.get_rf_parameters(self.file_df,self.low_source_current) 
+    forwarded_power,reflected_power,phase_load = getting_subsystems_data_alt.get_rf_parameters_power(self.file_df,self.low_source_current)
+    flap1_pos,flap2_pos = getting_subsystems_data_alt.get_rf_parameters_flaps(self.file_df,self.low_source_current)
+    df_subsystem_values_rf = [source_current,dee1_voltage,dee2_voltage,forwarded_power,reflected_power,phase_load,flap1_pos,flap2_pos]
     df_subsystem_rf = pd.concat(df_subsystem_values_rf,axis=1,keys=df_column_names_rf)
     return df_subsystem_rf
 

@@ -83,9 +83,9 @@ def get_time(excel_data_df,current):
 
 
 def get_transmission(self):
-    foil_current_max_isochronism = np.max(self.df_isochronism.Foil_I)/self.probe_current
+    foil_current_max_isochronism = np.average(np.max(self.df_isochronism.Foil_I[:-1].astype(float))/(self.probe_current.astype(float)))
     transmission = foil_current_max_isochronism*100
-    transmission_std = float(0)
+    transmission_std = np.std(np.max(self.df_isochronism.Foil_I)/(self.probe_current.astype(float)))
     foil_number = np.average(self.df_subsystem_source.Foil_No)
     transmission_list = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,transmission,transmission_std,foil_number]] 
     df_transmission_i = pd.DataFrame((transmission_list),columns=columns_names.COLUMNS_TRANSMISSION)      
@@ -107,40 +107,22 @@ def get_isochronism(data_df):
         minimum_value_str = str(minimum_value)
     final_index = data_df.Magnet_I[data_df.Magnet_I == maximum_value_str].index[0]
     intial_index = data_df.Magnet_I[data_df.Magnet_I == minimum_value_str].index[0]
-    magnet_current = data_df.Magnet_I.loc[intial_index:final_index].astype(float)
-    coll_current_l = data_df.Coll_l_I.loc[intial_index:final_index].astype(float)
-    coll_current_r = data_df.Coll_r_I.loc[intial_index:final_index].astype(float)
-    target_current = data_df.Target_I.loc[intial_index:final_index].astype(float)
-    foil_current = data_df.Foil_I.loc[intial_index:final_index].astype(float)
-    df_column_isochronism = ["Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I"]
-    df_subsystem_values_beam = [magnet_current,foil_current,coll_current_l,target_current,coll_current_r]
+    magnet_current = data_df.Magnet_I.loc[intial_index:final_index+1].astype(float)
+    coll_current_l = data_df.Coll_l_I.loc[intial_index:final_index+1].astype(float)
+    coll_current_r = data_df.Coll_r_I.loc[intial_index:final_index+1].astype(float)
+    target_current = data_df.Target_I.loc[intial_index:final_index+1].astype(float)
+    foil_current = data_df.Foil_I.loc[intial_index:final_index+1].astype(float)
+    time = data_df.Time.loc[intial_index:final_index+1].astype(str)
+    df_column_isochronism = ["Time","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I"]
+    df_subsystem_values_beam = [time,magnet_current,foil_current,coll_current_l,target_current,coll_current_r]
     df_isochronism = pd.concat(df_subsystem_values_beam,axis=1,keys=df_column_isochronism)
+    print ("ISOCHRONISM!!!!")
+    print (df_isochronism)
     return df_isochronism
 
-def get_ion_source_performance(data_df):
-    maximum_value = float(max(data_df.Magnet_I.astype(float)))
-    maximum_value_str = str(maximum_value)
-    maximum_value_index = data_df.Magnet_I[data_df.Magnet_I == maximum_value_str].index[0]
-    subselection = data_df.iloc[:maximum_value_index]
-    print ("MAGNET")
-    print (maximum_value)
-    print ("SELECTION")
-    print (subselection)
-    minimum_value = float(min(subselection.Magnet_I))
-    minimum_value_str = str(minimum_value)
-    #intial_index = subselection.Magnet_I[subselection.Magnet_I == minimum_value_str].index[0] - 3
-    initial_index = data_df[data_df.Probe_I == str(np.max(data_df.Probe_I.astype(float)))].index[0] +2
-    probe_current = float(data_df.Probe_I[initial_index])
-    print (probe_current)
-    if probe_current <= 10.0:
-        initial_index = initial_index - 2
-        probe_current = float(data_df.Probe_I[initial_index])
-    ion_source_current = float(data_df.Arc_I[initial_index])   
-    source_performance = (float(probe_current)/float(ion_source_current))
-    source_performance_std = float(0)
-    df_column_ion_source_performance = ["Ion_source_I","Probe_stable_I","Source_performance"]
-    subsystem_source_performance = [ion_source_current,probe_current,source_performance]
-    return probe_current,ion_source_current,source_performance,source_performance_std 
+def get_probe_current(excel_data_df):
+    probe_current = getattr(excel_data_df,"Probe_I").astype(float)[(excel_data_df.Probe_I.astype(float) > 14) & (excel_data_df.Probe_I.astype(float) < 16)]
+    return probe_current
 
 def get_foil_number(excel_data_df,current):
     foil_number = excel_data_df.Foil_No[excel_data_df['Target_I'].astype(float) > float(current)].astype(int)
@@ -155,6 +137,8 @@ def get_source_parameters(excel_data_df,current):
     source_voltage = excel_data_df.Arc_V[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     gas_flow = excel_data_df.Gas_flow[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     source_current = excel_data_df.Arc_I[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
+    print ("CURRENT")
+    print (source_current)
     return source_voltage,source_current,gas_flow
 
 def get_rf_parameters(excel_data_df,current):
@@ -168,20 +152,20 @@ def get_rf_parameters_power(excel_data_df,current):
     phase_load = excel_data_df.Phase_load[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     return forwarded_power,reflected_power,phase_load
 
-def get_rf_parameters_sparks(excel_data_df,source_current):
-    dee2_voltage = excel_data_df.Dee_2_kV[excel_data_df['Arc_I'].astype(float) > float(source_current)].astype(float)
-    dee1_voltage = excel_data_df.Dee_1_kV[excel_data_df['Arc_I'].astype(float) > float(source_current)].astype(float)
+def get_rf_parameters_sparks(excel_data_df):
+    dee2_voltage = excel_data_df.Dee_2_kV[excel_data_df['Arc_I'].astype(float)].astype(float)
+    dee1_voltage = excel_data_df.Dee_1_kV[excel_data_df['Arc_I'].astype(float)].astype(float)
     return dee1_voltage,dee2_voltage
 
-def get_rf_parameters_power_sparks(excel_data_df,source_current):
-    forwarded_power = excel_data_df.RF_fwd_W[excel_data_df['Arc_I'].astype(float) > float(source_current)].astype(float)
-    reflected_power = excel_data_df.RF_refl_W[excel_data_df['Arc_I'].astype(float) > float(source_current)].astype(float)
-    phase_load = excel_data_df.Phase_load[excel_data_df['Arc_I'].astype(float) > float(source_current)].astype(float)
+def get_rf_parameters_power_sparks(excel_data_df):
+    forwarded_power = excel_data_df.RF_fwd_W[excel_data_df['Arc_I'].astype(float)].astype(float)
+    reflected_power = excel_data_df.RF_refl_W[excel_data_df['Arc_I'].astype(float)].astype(float)
+    phase_load = excel_data_df.Phase_load[excel_data_df['Arc_I'].astype(float)].astype(float)
     return forwarded_power,reflected_power,phase_load
 
-def get_rf_parameters_flaps_sparks(excel_data_df,source_current):
-    Flap1_pos = excel_data_df.Flap1_pos[excel_data_df['Arc_I'].astype(float) > float(source_current)].astype(float)
-    Flap2_pos = excel_data_df.Flap2_pos[excel_data_df['Arc_I'].astype(float) > float(source_current)].astype(float)
+def get_rf_parameters_flaps_sparks(excel_data_df):
+    Flap1_pos = excel_data_df.Flap1_pos[excel_data_df['Arc_I'].astype(float)].astype(float)
+    Flap2_pos = excel_data_df.Flap2_pos[excel_data_df['Arc_I'].astype(float)].astype(float)
     return Flap1_pos,Flap2_pos
 
 def get_rf_parameters_flaps(excel_data_df,current):
@@ -208,7 +192,7 @@ def get_target_parameters(excel_data_df):
     return target_current,max_current
 
 def get_source_parameters_limit(excel_data_df):
-    max_source_current = 0.05*(np.max(excel_data_df['Arc_I'].astype(float)))
+    max_source_current = -0.05*(np.max(excel_data_df['Arc_I'].astype(float)))
     return max_source_current
 
 def get_extraction_parameters(excel_data_df,current):
