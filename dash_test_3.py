@@ -30,41 +30,21 @@ import managing_files_alt
 import computing_charge_df_alt
 import ion_source_studies
 import additional_functions
+import cyclotron_class
 
 
-columns = ["CHOOSE","SOURCE","VACUUM","RF","TARGET"]
+columns = ["CHOOSE","SOURCE","MAGNET","BEAM","VACUUM","RF","RF_STABILITY","TARGET"]
 columns_horizontal = ["DATE","FILE"]
 #columns_directory = ["CURRENT DIRECTORY"]
 target_1 = computing_charge_df_alt.target_cumulative_current(computing_charge_df_alt.df_information)
 target_2 = computing_charge_df_alt.target_cumulative_current(computing_charge_df_alt.df_information)
 
 #COLORS = ["#047495","#fc5a50","#74a662"]
-COLORS = [["#029386","#069AF3"],["#F97306","#EF4026"],["#054907","#15B01A"]]
+COLORS = ["#F97306","#EF4026"],["#029386","#069AF3"],["#054907","#15B01A"]
+COLORS_TRENDS = [[["#F97306","#EF4026","#054907"],["#F97306","#EF4026","#054907"],["#F97306","#EF4026","#054907"],["#F97306","#029386","#054907"]],[["#029386","#069AF3","#15B01A"],
+["#029386","#069AF3","#15B01A"],["#029386","#069AF3","#15B01A"],["#029386","#069AF3","#15B01A"]]]
 
-class cyclotron:
-    def __init__(self):
-        #self.output_path = "/Users/anagtv/Documents/OneDrive/046 - Medical Devices/Mantenimientos ciclotrones/TEST"
-        self.target_number = 0
-        self.date_stamp = 0
-        self.name = 0 
-        self.file_number = 0
-        self.irradiation_values = 0
-        self.file_df = []
-        self.source_performance_total = []
-        self.source_performance_total_error = []
-        self.source_performance = 0
-        self.target_min = 0
-        self.target_max = 0
-        self.values_targets = [self.target_min,self.target_max]
-        #INIT DATAFRAMES
-        columns_names.initial_df(self)
-
-    def file_output(self):
-        #Computing or just displaying trends
-        saving_trends_alt.getting_summary_per_file(self)
-        ion_source_studies.returning_current(cyclotron_information,ion_source_studies.current_vaccum)
-
-cyclotron_information = cyclotron()
+cyclotron_information = cyclotron_class.cyclotron()
 
 
 dt1_table = [
@@ -74,6 +54,54 @@ dt1_table = [
 
 app = JupyterDash(external_stylesheets=[dbc.themes.SLATE])
 
+layout = {
+  "title": "Plot With Background Color", 
+  "width": 576, 
+  "height": 396, 
+  "margin": {
+    "b": 49, 
+    "l": 72, 
+    "r": 57, 
+    "t": 47, 
+    "pad": 0
+  }, 
+  "xaxis1": {
+    "side": "bottom", 
+    "type": "linear", 
+    #"range": [-13.473985351971331, 459.5006453519714], 
+    "ticks": "inside", 
+    "anchor": "y1", 
+    "domain": [0.0, 1.0], 
+    "mirror": "ticks", 
+    "nticks": 7, 
+    "showgrid": True, 
+    "showline": True, 
+    "tickfont": {"size": 10.0}, 
+    "zeroline": False
+  }, 
+  "yaxis1": {
+    "side": "left", 
+    "type": "linear", 
+    #"range": [-0.061127115526122155, 1.0627937821927889], 
+    "ticks": "inside", 
+    "anchor": "x1", 
+    #"domain": [0.0, 1.0], 
+    "mirror": "ticks", 
+    "nticks": 8, 
+    "showgrid": True, 
+    "showline": True, 
+    "tickfont": {"size": 10.0}, 
+    "zeroline": False
+  }, 
+  "autosize": False, 
+  "hovermode": "closest", 
+  "titlefont": {
+    "size": 12.0, 
+    "color": "#262626"
+  }, 
+  "showlegend": False, 
+  "plot_bgcolor": "white"
+}
 app.layout = html.Div([
     dbc.Card(
         dbc.CardBody([
@@ -123,10 +151,10 @@ app.layout = html.Div([
                 ], width=3),
                 dbc.Col([
                     dcc.Upload(
-        id='upload_data_folder',
+        id='upload_data_file',
         children=html.Div([
             'Drag and Drop or ',
-            html.A('Select Folder'),
+            html.A('Select Individual File'),
                 dbc.Col([
                     html.Div(id='output_data_folder')
                 ], width=1),
@@ -153,32 +181,85 @@ app.layout = html.Div([
                 ], width=5),
                 dbc.Col([
                     dcc.Graph(id='time_series_chart') 
-                ], width=5),
+                ], width=6),
             ], align='center'), 
             html.Br(),
             dbc.Row([
                 dbc.Col([
                     dcc.Graph(id='time-series-chart4')
-                ], width=5),
-                dbc.Col([
-                    dcc.Graph(id='time-series-chart3')
+                ], width=12),
+            ], align='center'), 
+            html.Br(),
+            dbc.Row([
+                 dbc.Col([
+                    dcc.Graph(id='target_collimators_1')
                 ], width=6),
-            ], align='center'),      
+                dbc.Col([
+                    dcc.Graph(id='target_collimators_2') 
+                ], width=6),
+            ], align='center'),
+            html.Br(),
+            dbc.Row([
+                 dbc.Col([
+                    dcc.Graph(id='foils_1_1_2_3')
+                ], width=6),
+                dbc.Col([
+                    dcc.Graph(id='foils_2_1_2_3') 
+                ], width=6),
+            ], align='center'),  
+             html.Br(),
+            dbc.Row([
+                 dbc.Col([
+                    dcc.Graph(id='foils_1_4_5_6')
+                ], width=6),
+                dbc.Col([
+                    dcc.Graph(id='foils_2_4_5_6') 
+                ], width=6),
+            ], align='center')   
         ]), color = 'dark'
     )
 ])
 
 
+def general_status_plot(fig_status,values_to_plot,range_values,y_position,text_to_plot):
+    for i in range(len(values_to_plot)):
+        if np.min(range_values[i][2]) <=(values_to_plot[i]) <= np.max(range_values[i][2]):
+             print ("RED")
+             normalized_colors_internal = "#FE420F"
+             normalized_colors_external = "#F97306"
+        elif np.min(range_values[i][1]) < (values_to_plot[i]) <= np.max(range_values[i][1]):
+             print ("ORANGE")
+             normalized_colors_internal = "orange"
+             normalized_colors_external = "#FAC205" 
+        elif np.min(range_values[i][0]) <= (values_to_plot[i]) <= np.max(range_values[i][0]):
+             print ("GREEN")
+             normalized_colors_internal = "green"
+             normalized_colors_external = "#76FF7B"
+        fig_status.add_trace(go.Indicator(
+    mode = "number+gauge", value = values_to_plot[i][0],
+    domain = {'x': [0.25, 1], 'y': y_position[i]},
+    title = {'text' :text_to_plot[i]},
+    gauge = {
+        'shape': "bullet",
+        'axis': {'range': [None, np.max(range_values[i])]},
+        'steps': [
+            {'range': range_values[i][3], 'color': "red"},
+            ],
+        'bar': {'color': normalized_colors_internal}
+        }))
+    return fig_status
 
 @app.callback(
     Output("time_series_chart_volume", "figure"), 
-    [Input("ticker", "value")],
+    Input("ticker", "value"),
     Input("time_series_chart", "figure"),
+    Input('upload_data_file', 'filename'),
     )
-def daily_report(ticker,chart): 
-    fig = make_subplots(rows=3, cols=1,shared_xaxes=True,
-                    vertical_spacing=0.02)
-    fig.update_layout(height=900, width=800)
+def daily_report(ticker,chart,input_file): 
+    fig_volume = go.FigureWidget(make_subplots(rows=3, cols=1,shared_xaxes=True,
+                    vertical_spacing=0.02))
+    fig_volume.update_layout(title="Individual log")
+    fig_volume.update_layout(height=1500)
     if (ticker == "CHOOSE"):
         x_values = [0]
         y_values = [np.array(0),np.array(0),np.array(0)]
@@ -186,89 +267,38 @@ def daily_report(ticker,chart):
         names = ["","",""]
         units = ["","",""]
         for i in range(3): 
-            fig = additional_functions.plotting_simple(fig,x_values,y_values[i],y_values_error[i],units[i],i+1,1,COLORS[i][0])
+            fig_volume = additional_functions.plotting_simple_no_error(fig_volume,x_values,y_values[i],units[i],i+1,1,COLORS[i][0],"")
     else:
-       fig_volume = additional_functions.plotting_simple_no_error(fig,cyclotron_information.file_df.Time,cyclotron_information.file_df.Arc_I,"Arc I [mA]",1,1,COLORS[1][0])
-       fig_volume = additional_functions.plotting_simple_no_error(fig,cyclotron_information.file_df.Time,cyclotron_information.file_df.Target_I,"Target I [\u03bcA]",2,1,COLORS[1][0])
-       fig_volume = additional_functions.plotting_simple_no_error(fig,cyclotron_information.file_df.Time,cyclotron_information.file_df.Vacuum_P,"Vacuum P [1e-5 mbar]",3,1,COLORS[1][0])
-       fig.update_layout(showlegend=False)
-       fig.update_xaxes(title_text="Date", row=3, col=1)
-    return (fig)
+       if ticker == "SOURCE":
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Arc_I.astype(float),"Arc I [mA]",1,1,COLORS[2][0],"Source current")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Target_I.astype(float),"Target I [\u03bcA]",2,1,COLORS[2][0],"Target current")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float),"Collimators [\u03bcA]",3,1,COLORS[2][0],"Collimators current")
+          print ("HEEEERERRR")
+          scatter = fig_volume.data[0]
+          print (scatter)
+          fig_volume.layout.hovermode = 'closest'
+          scatter.on_click(update_point)
+       elif ticker == "VACUUM": 
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Arc_I,"Arc I [mA]",1,1,COLORS[2][0],"Source current")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Vacuum_P.astype(float)*1e5,"Vacuum P [1e-5 mbar]",2,1,COLORS[2][0],"Vacuum")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Gas_flow,"Gas flow [sccm]",3,1,COLORS[2][0],"Gas flow")
+       elif ticker == "RF": 
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Flap1_pos.astype(float),"Flap [%]",1,1,COLORS[2][0],"Flap 1")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Flap2_pos.astype(float),"Flap [%]",1,1,COLORS[2][1],"Flap 2")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Dee_1_kV.astype(float),"RF Voltage 1 [kV]",2,1,COLORS[2][0],"RF Dee 1")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Dee_2_kV.astype(float),"RF Voltage 2 [kV]",2,1,COLORS[2][1],"RF Dee 2")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.RF_fwd_W.astype(float),"RF Power (forwarded) [kW]",3,1,COLORS[2][0],"RF Power Fwd")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.RF_refl_W.astype(float),"RF Power (reflected) [kW]",3,1,COLORS[2][1], "RF Power Rfl")
+       elif ticker == "TARGET":
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Target_I.astype(float),"Target I [\u03bcA]",1,1,COLORS[2][0],"Target current")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Target_P.astype(float),"Pressure [psi]",2,1,COLORS[2][0],"Target pressure")
+          fig_volume = additional_functions.plotting_simple_no_error(fig_volume,cyclotron_information.file_df.Time,cyclotron_information.file_df.Extr_pos.astype(float),"Extraction position [%]",3,1,COLORS[2][0],"Extraction")
+       fig_volume.update_layout(title="Last log")
+       fig_volume.update_xaxes(title_text="Date", row=3, col=1)
+    return (fig_volume)
    
 
 
-@app.callback(
-    Output("time-series-chart4", "figure"), 
-    Input("ticker", "value"),
-    Input("time_series_chart", "figure"),
-    )
-def display_source_performance(ticker,chart): 
-    if ticker == "SOURCE": 
-        df_to_average = cyclotron_information.source_performance
-        print ("DF SOURCE")
-        print (df_to_average)
-        text_to_plot = "Source performance [mA/\u03bcA]"
-        range_values = [[0,1.5],[1.5,3],[3.0,4.5],[4.5,6.0]]
-        value_ob = 3.0
-    elif ticker == "VACUUM":
-        df_to_average = (cyclotron_information.df_vacuum['PRESSURE_AVE'])
-        text_to_plot = "Vacuum level"
-        range_values = [[0,1.3],[1.3,1.6],[1.6,1.8],[1.8,2.0]]
-        value_ob = 2.0
-    elif ticker == "RF": 
-        text_to_plot = "RF level"
-        df_to_average = cyclotron_information.df_rf.FORWARD_POWER_AVE
-        range_values = [[0,11],[11,12],[12,13],[13,14]]
-        value_ob = 13.5
-    else:
-        df_to_average = [0,0,0]
-        text_to_plot = " "
-        range_values = [[0,1],[1,2],[2,3],[3,4]]
-        value_ob = 3.5
-    fig_evolution = go.Figure(go.Indicator(
-    mode = "gauge+number",
-    value = np.average(df_to_average) ,
-    domain = {'x': [0, 1], 'y': [0, 1]},
-    title = {'text': text_to_plot },
-    gauge = {
-                'axis': {'range': [None, np.max(range_values)], 'tickwidth': 1, 'tickcolor': "darkblue"},
-                'bar': {'color': "darkblue"},
-                'steps' : [
-                     {'range': range_values[0], 'color': "green"},
-                     {'range': range_values[1], 'color': "yellow"},
-                     {'range': range_values[2], 'color': "orange"},
-                     {'range': range_values[3], 'color': "red"}
-                ],
-        
-                'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': value_ob}
-            }
-))
-    fig_evolution.update_layout(paper_bgcolor = "lavender", font = {'color': "darkblue", 'family': "Arial"})
-    return fig_evolution
-
-
-@app.callback(
-    Output("time-series-chart3", "figure"), 
-    Input("ticker", "value"),
-    Input("time_series_chart", "figure"),
-    Input('upload_data', 'contents'),
-    State('upload_data', 'filename'),
-    State('upload_data', 'last_modified')
-    )
-def display_time_series_2(ticker,chart,list_of_contents,list_of_names, list_of_dates):
-    df_target_1 = target_1.df_information_foil
-    df_target_2 = target_2.df_information_foil
-    print ("TARGET INFORMATION")
-    print (target_1.df_information_foil)
-    fig2 =go.Figure(go.Sunburst(
-     labels=["Ion Source", "Target 1", "Target 2", "Foil 1 (1)","Foil 2 (1)", "Foil 3 (1)","Foil 4 (1)","Foil 5 (1)","Foil 6 (1)","Foil 1 (2)","Foil 2 (2)", "Foil 3 (2)","Foil 4 (2)"],
-     parents=["","Ion Source","Ion Source","Target 1","Target 1","Target 1","Target 1","Target 1","Target 1","Target 2","Target 2","Target 2","Target 2"],values = 
-     [(df_target_1.CURRENT_SOURCE.sum() + df_target_2.CURRENT_SOURCE.sum())/1000,df_target_1.CURRENT_TARGET.sum()/1000,df_target_2.CURRENT_TARGET.sum()/1000,
-     df_target_1.CURRENT_FOIL[df_target_1.FOIL == "1"].sum(), df_target_1.CURRENT_FOIL[df_target_1.FOIL == "2"].sum(), df_target_1.CURRENT_FOIL[df_target_1.FOIL == "3"].sum(),
-     df_target_1.CURRENT_FOIL[df_target_1.FOIL == "4"].sum(),df_target_1.CURRENT_FOIL[df_target_1.FOIL == "5"].sum(),df_target_1.CURRENT_FOIL[df_target_1.FOIL == "6"].sum(), df_target_2.CURRENT_FOIL[df_target_2.FOIL == "1"].sum(), df_target_2.CURRENT_FOIL[df_target_2.FOIL == "2"].sum(),
-     df_target_2.CURRENT_FOIL[df_target_2.FOIL == "3"].sum(), df_target_2.CURRENT_FOIL[df_target_2.FOIL == "4"].sum()]))
-    fig2.update_layout(paper_bgcolor = "lavender", font = {'color': "darkblue", 'family': "Arial"},margin = dict(t=0, l=0, r=0, b=0))
-    return fig2
 
 @app.callback(
     Output("time_series_chart", "figure"), 
@@ -279,78 +309,163 @@ def display_time_series_2(ticker,chart,list_of_contents,list_of_names, list_of_d
     State('upload_data', 'last_modified')
     )
 def display_time_series(ticker,ticker_horizontal,list_of_contents,list_of_names, list_of_dates):
-    fig = make_subplots(rows=3, cols=1,shared_xaxes=True,
-                    vertical_spacing=0.02)
-    fig.update_layout(height=900, width=800)
-    if (ticker == "CHOOSE"):
-        x_values = [0]
-        y_values = [np.array(0),np.array(0),np.array(0)]
-        y_values_error = [np.array(0),np.array(0),np.array(0)]
-        names = ["","",""]
-        units = ["","",""]
-        for i in range(3): 
-            fig = additional_functions.plotting_simple(fig,x_values,y_values[i],y_values_error[i],units[i],i+1,1,COLORS[i][0])
-    else:
-        df_summary_source = cyclotron_information.df_source
-        df_summary_vacuum = cyclotron_information.df_vacuum
-        df_summary_beam = cyclotron_information.df_beam
-        df_summary_rf = cyclotron_information.df_rf
-        cyclotron_information.target_min = np.min(df_summary_source.TARGET.astype(float))
-        cyclotron_information.target_max = np.max(df_summary_source.TARGET.astype(float))
-        cyclotron_information.values_targets = [cyclotron_information.target_min,cyclotron_information.target_max]
-        j = - 1
-        for target in cyclotron_information.values_targets:
-            j += 1  
-            df = pd.DataFrame(list(zip(df_summary_beam.DATE,df_summary_source.TARGET,df_summary_source.FILE,df_summary_source.CURRENT_AVE,df_summary_source.CURRENT_STD,df_summary_beam.TARGET_CURRENT_AVE,df_summary_beam.TARGET_CURRENT_STD,df_summary_beam.COLL_CURRENT_L_AVE + df_summary_beam.COLL_CURRENT_R_AVE,
-                df_summary_beam.COLL_CURRENT_L_STD + df_summary_beam.COLL_CURRENT_R_STD,df_summary_vacuum.PRESSURE_AVE))
-                ,columns=["DATE","TARGET_NUMBER","FILE","SOURCE","SOURCE_STD","TARGET","TARGET_STD","COLLIMATORS","COLLIMATORS_STD","VACUUM"])    
-            df = df[df.TARGET_NUMBER.astype(float) == float(target)]
-            volume_information = cyclotron_information.df_volume[cyclotron_information.df_volume.TARGET.astype(float) == float(target)]
-            x_values = getattr(df,ticker_horizontal)
-            if ticker == "SOURCE":
-                y_values = [df['SOURCE'],df['TARGET'],df['COLLIMATORS']]
-                y_values_error =  [df['SOURCE_STD'],df['TARGET_STD'],df['COLLIMATORS_STD']]
-                units = [r"I source[mA]","I target [\u03bcA]","I collimators[\u03bcA]"]
-            elif ticker == "VACUUM":
-                y_values = [df['SOURCE'],df_summary_vacuum['PRESSURE_AVE'],df_summary_source['HFLOW'].astype(float)] 
-                y_values_error =  [df['SOURCE_STD'],df_summary_vacuum['PRESSURE_STD'],[0]*len(df_summary_source['HFLOW'].astype(float))]
-                units = ["I [mA]","10e-5 mbar","sccm"]
-            elif ticker == "RF": 
-                y_values = [df['SOURCE'],df_summary_rf['DEE1_VOLTAGE_AVE'],df_summary_rf['FORWARD_POWER_AVE']]
-                y_values_error =  [df['SOURCE_STD'],df_summary_rf['DEE1_VOLTAGE_STD'],df_summary_rf['FORWARD_POWER_STD']]
-                units = ["I [mA]","kV","kW"]
-            elif ticker == "TARGET":
-                print ("TARGET")
-                print (volume_information)
-                y_values = [df['SOURCE'],volume_information.PRESSURE_FINAL,volume_information.MAX_PRESSURE]
-                y_values_error =  [df['SOURCE_STD'],volume_information.STD_PRESSURE,volume_information.STD_PRESSURE]
-                units = [r"I source[mA]","Pressure final [psi]","Pressure average [psi]"]
-            for i in range(3): 
-                fig = additional_functions.plotting_simple(fig,x_values,y_values[i],y_values_error[i],units[i],i+1,1,COLORS[0][j])
-    #scatter.on_click(update_point)
-    fig.update_layout(showlegend=False)
-    fig.update_xaxes(title_text="Date", row=3, col=1)
+    fig = cyclotron_information.plotting_stadistics(ticker,ticker_horizontal)
     return fig
  
 
+# CUMULATIVE PLOTS 
+
+
+@app.callback(
+    Output("time-series-chart4", "figure"), 
+    Input("ticker", "value"),
+    Input("time_series_chart", "figure"),
+    )
+def display_total_charge(ticker,chart): 
+    text_to_plot = ["Total Source [Ah]","Total Target " + str(cyclotron_information.physical_targets[0]) +  " [mAh]","Total Target "+ str(cyclotron_information.physical_targets[1]) + " [mAh]"]
+    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_SOURCE"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1"].astype(float))[0],
+    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2"].astype(float))[0]]
+    range_values = [[[-1,50],[50,70],[110,120],[110,120]],[[-1,7000],[7000,11000],[11000,12000],[11000,12000]],[[-1,7000],[7000,11000],[11000,12000],[11000,12000]]]
+    y_position = [[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]]     
+    fig_status = go.Figure()
+    fig_status = general_status_plot(fig_status,values_to_plot,range_values,y_position,text_to_plot)
+    fig_status.update_layout(title="Source & Targets")
+    return fig_status
+
+def return_fig(text_to_plot,values_to_plot,range_values):
+    y_position = [[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]]     
+    fig_status = go.Figure()
+    fig_status = general_status_plot(fig_status,values_to_plot,range_values,y_position,text_to_plot)
+    return fig_status
+
+@app.callback(
+    Output("foils_1_1_2_3", "figure"), 
+    Input("ticker", "value"),
+    Input("time_series_chart", "figure"),
+    )
+def display_foils_1_1_2_3(ticker,chart): 
+    text_to_plot = ["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]"]
+    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_1"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_2"].astype(float))[0],
+    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_3"].astype(float))[0]]
+    range_values = [[[-1,1900],[1900,2000],[2000,2700],[2000,2700]],[[-1,1900],[1900,2000],[2000,2700],[2000,2700]],[[-1,1900],[1900,2000],[2000,2700],[2000,2700]]]
+    fig_status = return_fig(text_to_plot,values_to_plot,range_values)
+    fig_status.update_layout(title="Target " + str(cyclotron_information.physical_targets[0]) + " (Foil 1 & Foil 2 & Foil 3)")
+    return fig_status
+
+@app.callback(
+    Output("foils_1_4_5_6", "figure"), 
+    Input("ticker", "value"),
+    Input("time_series_chart", "figure"),
+    )
+def display_foils_1_4_5_6(ticker,chart): 
+    text_to_plot = ["Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"]
+    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_4"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_5"].astype(float))[0],
+    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_6"].astype(float))[0]]
+    range_values = [[[-1,1900],[1900,2000],[2000,2700],[2000,2700]],[[-1,1900],[1900,2000],[2000,2700],[2000,2700]],[[-1,1900],[1900,2000],[2000,2700],[2000,2700]]]  
+    fig_status = return_fig(text_to_plot,values_to_plot,range_values)
+    fig_status.update_layout(title="Target " + str(cyclotron_information.physical_targets[0]) + " (Foil 4 & Foil 5 & Foil 6)")
+    return fig_status
+
+@app.callback(
+    Output("foils_2_1_2_3", "figure"), 
+    Input("ticker", "value"),
+    Input("time_series_chart", "figure"),
+    )
+def display_foils_2_1_2_3(ticker,chart): 
+    text_to_plot = ["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]"]
+    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_1"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_2"].astype(float))[0],
+    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_3"].astype(float))[0]]
+    range_values = [[[-1,1900],[1900,2000],[2000,2700],[2000,2700]],[[-1,1900],[1900,2000],[2000,2700],[2000,2700]],[[-1,1900],[1900,2000],[2000,2700],[2000,2700]]]    
+    fig_status = return_fig(text_to_plot,values_to_plot,range_values)
+    fig_status.update_layout(title="Target " + str(cyclotron_information.physical_targets[1])  + " (Foil 1 & Foil 2 & Foil 3)")
+    return fig_status
+
+@app.callback(
+    Output("foils_2_4_5_6", "figure"), 
+    Input("ticker", "value"),
+    Input("time_series_chart", "figure"),
+    )
+def display_foils_2_4_5_6(ticker,chart): 
+    text_to_plot = ["Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"]
+    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_4"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_5"].astype(float))[0],
+    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_6"].astype(float))[0]]
+    range_values = [[[-1,1900],[1900,2000],[2000,2600],[2000,2600]],[[-1,1900],[1900,2000],[2000,2600],[2000,2600]],[[-1,1900],[1900,2000],[2000,2600],[2000,2600]]]
+    fig_status = return_fig(text_to_plot,values_to_plot,range_values)
+    fig_status.update_layout(title="Target " + str(cyclotron_information.physical_targets[1])  + " (Foil 4 & Foil 5 & Foil 6)")
+    return fig_status
+
+@app.callback(
+    Output("target_collimators_1", "figure"), 
+    Input("ticker", "value"),
+    Input("time_series_chart", "figure"),
+    Input('upload_data', 'filename')
+    )
+def display_target_collimators_1(ticker,chart,list_of_names): 
+    text_to_plot = ["Target [mAh]","Collimator upper [mAh]","Collimator lower [mAh]"]
+    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_R_1"].astype(float))[0],
+    np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_L_1"].astype(float))[0]]
+    range_values = [[[-1,7000],[7000,11000],[11000,12000],[11000,12000]],[[-1,100],[100,1500],[1500,2000],[1500,2000]],[[-1,1000],[1000,1500],[1500,2000],[1500,2000]]]
+    fig_status = return_fig(text_to_plot,values_to_plot,range_values)
+    fig_status.update_layout(title="Target & Collimators " + str(cyclotron_information.physical_targets[0]))
+    return fig_status
+
+@app.callback(
+    Output("target_collimators_2", "figure"), 
+    Input("ticker", "value"),
+    Input("time_series_chart", "figure"),
+    )
+def display_target_collimators_1(ticker,chart): 
+    text_to_plot = ["Target [mAh]","Collimator upper [mAh]","Collimator lower [mAh]"]
+    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_R_2"].astype(float))[0],
+    np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_L_2"].astype(float))[0]]
+    range_values = [[[-1,7000],[7000,11000],[11000,12000],[11000,12000]],[[-1,100],[100,1500],[1500,2000],[1500,2000]],[[-1,1000],[1000,1500],[1500,2000],[1500,2000]]]
+    fig_status = return_fig(text_to_plot,values_to_plot,range_values)
+    fig_status.update_layout(title="Target & Collimators " + str(cyclotron_information.physical_targets[1]))
+    return fig_status
+
+  
 @app.callback(Output('output_data', 'children'),
               Input('upload_data', 'contents'),
               State('upload_data', 'filename'),
               State('upload_data', 'last_modified'))
 def update_output(list_of_contents,list_of_names, list_of_dates):
+    #columns_names.initial_df(cyclotron_information)
+    cyclotron_information.__init__()
+    target_1.__init__(computing_charge_df_alt.df_information)
+    target_2.__init__(computing_charge_df_alt.df_information)
     if list_of_contents is not None:
         additional_functions.getting_information(cyclotron_information,target_1,target_2,list_of_contents, list_of_names, list_of_dates)
-    
+ 
+
 @app.callback(Output('output_data_folder', 'children'),
-              Input('upload_data_folder', 'contents'),
-              State('upload_data_folder', 'filename'),
-              State('upload_data_folder', 'last_modified'))
+              Input('upload_data_file', 'contents'),
+              State('upload_data_file', 'filename'),
+              State('upload_data_file', 'last_modified'))
 def update_output(list_of_contents,list_of_names, list_of_dates):
+    #cyclotron_information = cyclotron()
+    #columns_names.initial_df(cyclotron_information)  
+    print (list_of_names)
+    print (list_of_dates)
     if list_of_contents is not None:
-        print ("HEREEEE")
+        additional_functions.parse_contents(cyclotron_information,list_of_contents[0],list_of_names[0], list_of_dates[0])
+        print ("CYCLOTRON INFORMATION")
+        print (cyclotron_information.file_df)   
+    #return (cyclotron_information)
+        #target_1.
+        #df_information = pd.DataFrame(columns=["DATE","FILE","FOIL","TARGET","CURRENT_SOURCE","CURRENT_FOIL","CURRENT_COLL_L","CURRENT_TARGET","CURRENT_COLL_R"])
         #additional_functions.getting_information(cyclotron_information,target_1,target_2,list_of_contents, list_of_names, list_of_dates)
 
         
+def update_point(trace, points, selector):
+    print ("ENTERING HEREEE")
+    c = list(scatter.marker.color)
+    s = list(scatter.marker.size)
+    for i in points.point_inds:
+        c[i] = '#bae2be'
+        s[i] = 20
+        with f.batch_update():
+            scatter.marker.color = c
+            scatter.marker.size = s
 
 
 app.run_server(debug=True)
