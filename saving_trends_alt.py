@@ -4,16 +4,9 @@ import managing_files_alt
 import tfs
 
 def getting_summary_per_file(self):
-    target_current = self.file_df.Target_I.astype(float)
-    pre_irradiation_len = (len(self.file_df.Target_I[self.file_df['Target_I'].astype(float) == 50.0].astype(float))) + (len(self.file_df.Target_I[self.file_df['Target_I'].astype(float) == 25.0].astype(float))) + (len(self.file_df.Target_I[self.file_df['Target_I'].astype(float) == 0.0].astype(float)))
-    pre_irradiation_len_relative = (pre_irradiation_len/len(self.file_df.Target_I.astype(float)))
-    print ("PRE_IRRADIATION")
-    print (pre_irradiation_len_relative)
-    if (pre_irradiation_len_relative) < 0.3:
-        managing_files_alt.file_open(self)
-        managing_files_alt.file_open_summary(self)
-            # GETTING STADISTIC NUMBERS
-            # summary voltage 
+    managing_files_alt.file_open(self)
+    managing_files_alt.file_open_summary(self)
+ 
         
 def getting_summary_final(self):
         self.df_rf = self.df_rf.dropna()
