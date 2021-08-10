@@ -25,6 +25,18 @@ class target_cumulative_current:
         self.df_information["CURRENT_COLL_R"] = []
         self.df_information_foil = df_information
 
+    def reset(self,df_information):
+        self.df_information = df_information
+        self.df_information["DATE"] = []
+        self.df_information["FOIL"] = [] 
+        self.df_information["TARGET"] = []
+        self.df_information["CURRENT_SOURCE"] = [] 
+        self.df_information["CURRENT_FOIL"] = []
+        self.df_information["CURRENT_COLL_L"] = []
+        self.df_information["CURRENT_TARGET"] = []
+        self.df_information["CURRENT_COLL_R"] = []
+        self.df_information_foil = df_information
+
     def selecting_data_to_plot_reset(self,cyclotron_information):
         file_df_zero = cyclotron_information.file_df
         file_df = cyclotron_information.file_df[cyclotron_information.file_df.Arc_I != "0"]
@@ -35,15 +47,23 @@ class target_cumulative_current:
             for name in LIST_NAMES:  
                 initial_hour_string = file_df.Time[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].iloc[0]
                 final_hour_string = file_df.Time[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].iloc[-1]
-                initial_hour = float(str(initial_hour_string)[0:2])*3600+float(str(initial_hour_string)[3:5])*60+float(str(initial_hour_string)[6:8])
-                final_hour = float(str(final_hour_string)[0:2])*3600+float(str(final_hour_string)[3:5])*60+float(str(final_hour_string)[6:8])
+                hours = float(str(initial_hour_string)[0:2])
+                minutes = float(str(initial_hour_string)[3:5])
+                seconds = float(str(initial_hour_string)[6:8])
+                hours_final = float(str(final_hour_string)[0:2])
+                minutes_final = float(str(final_hour_string)[3:5])
+                seconds_final = float(str(final_hour_string)[6:8])
+                if float(hours) > float(hours_final): 
+                    print ("HEREEEE")
+                    if float(hours_final) == 0:
+                        hours_final = (float(hours_final) + 24)
+                final_hour = hours_final*3600+minutes_final*60+seconds_final
+                initial_hour = hours*3600+minutes*60+seconds
                 average_current = np.average(getattr(file_df,name)[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].astype(float))
                 length = (final_hour-initial_hour)/3600
                 total_list.append(average_current.astype(float)*length)
             df_individual = pd.DataFrame([total_list],columns=COLUMN_NAMES)  
-            self.df_information = self.df_information.append(df_individual).reset_index(drop=True) 
-            print ("MORE CURRENT")
-            print (self.df_information)   
+            self.df_information = self.df_information.append(df_individual).reset_index(drop=True)  
         else:
             print ("HERRREEEEEE")
             print (file_df)
@@ -54,6 +74,7 @@ class target_cumulative_current:
             total_foil_list.append(getattr(self.df_information_foil_individual,name).astype(float).sum())
         df_individual = pd.DataFrame([total_foil_list],columns=COLUMN_NAMES)
         self.df_information_foil = self.df_information_foil.append(df_individual).reset_index(drop=True)  
+        self.df_information_foil = self.df_information_foil.drop_duplicates(subset=['CURRENT_SOURCE'])
 
     def get_summation_per_period(self):
         self.df_information = self.df_information.sort_values(by="FILE").reset_index(drop=True) 
@@ -63,6 +84,7 @@ class target_cumulative_current:
             print (foil)
             self.df_information_foil_individual = self.df_information[self.df_information.FOIL.astype(float) == foil]
             print ("CHECKING")
+            self.df_information_foil_individual = self.df_information_foil_individual.drop_duplicates(subset=['FILE'])
             print (self.df_information_foil_individual)
             if len(self.df_information_foil_individual) > 0:
                print ("ADDING")
