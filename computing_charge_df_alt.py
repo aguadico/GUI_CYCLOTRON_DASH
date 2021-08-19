@@ -47,6 +47,9 @@ class target_cumulative_current:
             for name in LIST_NAMES:  
                 initial_hour_string = file_df.Time[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].iloc[0]
                 final_hour_string = file_df.Time[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].iloc[-1]
+                if name == "Arc_I":
+                    initial_hour_string = file_df.Time.iloc[0]
+                    final_hour_string = file_df.Time.iloc[-1]
                 hours = float(str(initial_hour_string)[0:2])
                 minutes = float(str(initial_hour_string)[3:5])
                 seconds = float(str(initial_hour_string)[6:8])
@@ -60,6 +63,8 @@ class target_cumulative_current:
                 final_hour = hours_final*3600+minutes_final*60+seconds_final
                 initial_hour = hours*3600+minutes*60+seconds
                 average_current = np.average(getattr(file_df,name)[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].astype(float))
+                if name == "Arc_I": 
+                    average_current = np.average(getattr(file_df,name).astype(float))
                 length = (final_hour-initial_hour)/3600
                 total_list.append(average_current.astype(float)*length)
             df_individual = pd.DataFrame([total_list],columns=COLUMN_NAMES)  
@@ -74,7 +79,7 @@ class target_cumulative_current:
             total_foil_list.append(getattr(self.df_information_foil_individual,name).astype(float).sum())
         df_individual = pd.DataFrame([total_foil_list],columns=COLUMN_NAMES)
         self.df_information_foil = self.df_information_foil.append(df_individual).reset_index(drop=True)  
-        self.df_information_foil = self.df_information_foil.drop_duplicates(subset=['CURRENT_SOURCE'])
+        #self.df_information_foil = self.df_information_foil.drop_duplicates(subset=['CURRENT_SOURCE'])
 
     def get_summation_per_period(self):
         self.df_information = self.df_information.sort_values(by="FILE").reset_index(drop=True) 
