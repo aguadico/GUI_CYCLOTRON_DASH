@@ -10,28 +10,67 @@ import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import cyclotron_class
+import tfs
 
+RANGE_VALUES_CHARGE = {"charge_collimators_target":[[[0,10],[10,12.5],[12.5,15]],[[0,300],[300,500],[500,700]],[[0,300],[300,500],[500,700]]],
+"charge_foils": [[[0,2000],[2000,2500],[2500,3000]]] * 6,
+"charge_source_target":[[[0,100],[100,125],[125,150]],[[0,10],[10,12.5],[12.5,15]],[[0,10],[10,12.5],[12.5,15]]]}
+POSITION = {"charge_collimators_target":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],"charge_source_target":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],
+"charge_foils":[[0.8,0.9],[0.64,0.74],[0.48,0.58],[0.32, 0.42],[0.16, 0.26],[0.0, 0.1]]}
 
+def general_status_plot(fig_status,values_to_plot,range_values,y_position,text_to_plot):
+    for i in range(len(values_to_plot)):
+        fig_status.add_trace(go.Indicator(
+    mode = "number+gauge", value = values_to_plot[i][0],
+    domain = {'x': [0.25, 1], 'y': y_position[i]},
+    title = {'text' :text_to_plot[i]},
+    gauge = {
+        'shape': "bullet",
+        'axis': {'range': [None, np.max(range_values[i])]},
+        'steps': [
+            {'range': range_values[i][2], 'color': "red"},
+            {'range': range_values[i][0], 'color': "green"},
+            {'range': range_values[i][1], 'color': "orange"},
+            ],
+        'bar': {'color': "#223A38"}
+        }))
+    return fig_status
 
-def plotting_simple_name(fig,x_values,y_values,y_values_error,units,position_x,position_y,colori,namei,reference_value):
+def return_fig(fig_status,text_to_plot,values_to_plot,range_values,range_element):
+    y_position = POSITION[range_element]    
+    fig_status = general_status_plot(fig_status,values_to_plot,range_values,y_position,text_to_plot)
+    fig_status.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='#FFFFFF',font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=35))  
+    return fig_status
+
+def plotting_charge(cyclotron_information,text_to_plot,values_to_plot,top_text,range_element):
+    range_values = RANGE_VALUES_CHARGE[range_element]
+    fig_status = go.Figure()
+    fig_status = return_fig(fig_status,text_to_plot,values_to_plot,range_values,range_element)
+    fig_status.update_layout(title=top_text  ,
+    font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=60)) 
+    return fig_status
+
+def plotting_simple_name(fig,x_values,y_values,y_values_error,units,position_x,position_y,colori,markersi,namei,reference_value,ticker_layer):
     fig.add_trace(go.Scatter(x=x_values, y=y_values,name=namei,mode='markers',                                                         
-    marker=go.Marker(color=colori),
+    marker=go.Marker(dict(size=12,color=colori,line=dict(width=2,color=markersi))),
         error_y=dict(
             type='data',
             symmetric=True,
             array=y_values_error
             )),row=position_x, col=position_y)
-    print ("REFERNCE VALUE")
-    print (reference_value)
-    for i in range(len(reference_value)):
-         print ("IN THE LOOP")
-         print (reference_value[i])
-         print (reference_value[i][0])
-         print (reference_value[i][1])
-         print (reference_value[i][2])
-         fig.add_hrect(y0=reference_value[i][0], y1=reference_value[i][1]*reference_value[i][0], line_width=0, fillcolor="red", opacity=0.05,row=position_x, col=position_y)
-         fig.add_hline(y=reference_value[i][0], line_dash="dot",line_color="red",annotation_text=reference_value[i][2],
-                 annotation_position="bottom right",row=position_x, col=position_y)
+    print ("TICKER LAYER")
+    print (ticker_layer)
+    if ticker_layer == ["ADRF"]:
+        for i in range(len(reference_value)):
+             if len(reference_value[i]) > 0:
+                fig.add_hrect(y0=reference_value[i][1], y1=reference_value[i][2], line_width=0, fillcolor="red", opacity=0.05,row=position_x, col=position_y)
+                fig.add_hrect(y0=reference_value[i][0], y1=reference_value[i][1], line_width=0, fillcolor="orange", opacity=0.05,row=position_x, col=position_y)
+                fig.add_hline(y=reference_value[i][1], line_dash="dot",line_color="red",annotation_text="High risk area",
+                     annotation_position="bottom right",row=position_x, col=position_y)
+                fig.add_hline(y=reference_value[i][0], line_dash="dot",line_color="orange",annotation_text="Medium risk area",
+                     annotation_position="bottom right",row=position_x, col=position_y)
+
     #fig.add_hline(y=reference_value, line_dash="dot",line_color="green",
     #          annotation_text="Reference value", 
     #          annotation_position="bottom right",row=position_x, col=position_y)
@@ -41,14 +80,17 @@ def plotting_simple_name(fig,x_values,y_values,y_values_error,units,position_x,p
     fig.update_yaxes(title_text=units,row=position_x, col=position_y)
     return fig
 
-def plotting_simple_no_error(fig,x_values,y_values,units,position_x,position_y,colori,namei):
+def plotting_simple_no_error(fig,x_values,y_values,units,position_x,position_y,colori,namei,sizei):
     fig.add_trace(go.Scatter(x=x_values, y=y_values,mode='markers',name=namei,                                                        
-    marker=go.Marker(color=colori)),row=position_x, col=position_y)
+    marker=go.Marker(dict(size=sizei,color=colori))),row=position_x, col=position_y)
     fig.update_yaxes(title_text=units, row=position_x, col=position_y)
     return fig
 
 
 def getting_information(cyclotron_information,target_1,target_2,list_of_contents, list_of_names, list_of_dates):
+    #fig_volume.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+    #        plot_bgcolor='#F3F6F6',font=dict(size=18,color="#223A38")) 
+    #fig_volume.update_layout(title="Individual log " + str(cyclotron_information.file_number) + " Date " + str(cyclotron_information.date_stamp))
     for c, n, d in zip(list_of_contents, list_of_names, list_of_dates): 
         #all_names.append(str(n[:-4]))
         parse_contents(cyclotron_information,c, n, d) 
@@ -68,17 +110,14 @@ def getting_information(cyclotron_information,target_1,target_2,list_of_contents
     saving_trends_alt.getting_summary_final(cyclotron_information) 
     target_1.get_summation_per_period()
     target_2.get_summation_per_period()  
+    tfs.write("target_1_charge.out",target_1.df_information)
+    tfs.write("target_2_charge.out",target_2.df_information)
     cyclotron_information.source_performance = np.average(np.array(cyclotron_information.source_performance_total)[np.array(cyclotron_information.source_performance_total) > 0])         
     df_target_1 = target_1.df_information_foil
     df_target_2 = target_2.df_information_foil
     cyclotron_information.get_average_std_summary_cummulative(df_target_1,df_target_2)
     cyclotron_information.physical_targets = [np.min(cyclotron_information.df_extraction.PHYSICAL_TARGET),np.max(cyclotron_information.df_extraction.PHYSICAL_TARGET)]
-    print ("CYCLOTRON INFORMATION")
-    print (cyclotron_information.df_summary)
-    print ("CYCLOTRON INFORMATION (EXTRACTION)")
-    print (cyclotron_information.df_extraction)
-    print (cyclotron_information.df_extraction.CAROUSEL_POSITION_AVE)
-    print (cyclotron_information.df_magnet)
+
 
 def current_vaccum(X, a,b):
      x,y,z = X

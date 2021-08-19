@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import getting_subsystems_data_alt
 import columns_names
-
+va = 0
 def get_summary_ion_source(self): 
     source_current = self.df_subsystem_source.Arc_I
     source_voltage = self.df_subsystem_source.Arc_V
@@ -89,16 +89,15 @@ def get_summary_rf(self):
     ave_reflected_power,std_reflected_power,max_reflected_power,min_reflected_power = getting_subsystems_data_alt.get_statistic_values(reflected_power)
     ave_flap1_pos,std_flap1_pos,max_flap1_pos,min_flap1_pos = getting_subsystems_data_alt.get_statistic_values(flap1_pos)
     ave_flap2_pos,std_flap2_pos,max_flap2_pos,min_flap2_pos = getting_subsystems_data_alt.get_statistic_values(flap2_pos)
-    ave_phase_load,std_phase_load,max_phase_load,min_phase_load = getting_subsystems_data_alt.get_statistic_values(flap2_pos)  
+    ave_phase_load,std_phase_load,max_phase_load,min_phase_load = getting_subsystems_data_alt.get_statistic_values(phase_load)  
     rf_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,max_dee1_voltage,min_dee1_voltage,ave_dee1_voltage,std_dee1_voltage,max_dee2_voltage,min_dee2_voltage,ave_dee2_voltage,std_dee2_voltage,
     max_forwarded_power,min_forwarded_power,ave_forwarded_power,std_forwarded_power,max_reflected_power,min_reflected_power,ave_reflected_power,std_reflected_power,max_phase_load,min_phase_load,ave_phase_load,std_phase_load,max_flap1_pos,
     min_flap1_pos,ave_flap1_pos,std_flap1_pos,
     max_flap2_pos,min_flap2_pos,ave_flap2_pos,std_flap2_pos,
-    self.sparks_number,self.distance_flap_1,self.resonance_speed_1,self.average_instant_speed_1,self.max_instant_speed_1,self.std_instant_speed_1,
-    self.distance_flap_2,self.resonance_speed_2,self.average_instant_speed_2,self.max_instant_speed_2,self.std_instant_speed_2]]
+    self.sparks_number,self.distance_flap_1,self.average_instant_speed_1,self.max_instant_speed_1,self.std_instant_speed_1,
+    self.distance_flap_2,self.average_instant_speed_2,self.max_instant_speed_2,self.std_instant_speed_2]]
     df_rf_i = pd.DataFrame((rf_values),columns=columns_names.COLUMNS_RF)      
     self.df_rf = self.df_rf.append(df_rf_i,ignore_index=True)
- 
 
 
 def get_summary_extraction(self):
@@ -160,3 +159,38 @@ def get_summary_beam(self):
     max_collimator_total_rel,min_collimator_total_rel, ave_collimator_total_rel, std_collimator_total_rel]]
     df_beam_i = pd.DataFrame((beam_values),columns=columns_names.COLUMNS_BEAM )      
     self.df_beam = self.df_beam.append(df_beam_i,ignore_index=True)
+
+
+def get_filling_volume(self,va):
+    #pressure_initial = np.min(self.df_subsystem_pressure.Target_P.astype(float)[0:np.min(self.df_subsystem_pressure.Target_P[self.df_subsystem_pressure.Target_P.astype(float) > 400].index)])
+    #pressure_final = self.df_subsystem_pressure.Target_P.astype(float)[np.min(self.df_subsystem_pressure.Target_P[self.df_subsystem_pressure.Target_P.astype(float) > 400].index)]
+    pressure_no_current = self.file_df.Target_P.astype(float)[(self.file_df.Target_I.astype(float) < 1)]
+    high_pressure = pressure_no_current[pressure_no_current > 400][3:-3]
+    low_pressure = pressure_no_current[3:np.min(high_pressure.index)][pressure_no_current < 70]
+    high_pressure_ave = np.average(high_pressure)
+    high_pressure_std = np.std(high_pressure)
+    low_pressure_ave = np.average(low_pressure)
+    low_pressure_std = np.std(low_pressure)
+    pressure_irradiation_ave = np.average(self.df_subsystem_pressure_irradiation.Target_P)
+    pressure_irradiation_std = np.std(self.df_subsystem_pressure_irradiation.Target_P)
+    foil_number = np.average((self.df_subsystem_vacuum.Foil_No))
+    if float(self.file_df.Target_P[3]) < 100:
+        va += 1
+        values_filling = self.file_df.Target_P[(self.file_df.Target_P.astype(float) < 100) & (self.file_df.Target_P.astype(float) > 10)] 
+        initial_index = self.file_df.Target_P[self.file_df.Target_P.astype(float) > 105].index[0] 
+        p_values = self.file_df.Target_P[3:initial_index-1]
+        minimal_index = p_values[p_values.astype(float) == np.min(p_values.astype(float))].index[0]
+        initial_pressure = float(self.file_df.Target_P[minimal_index])
+        final_pressure = float(self.file_df.Target_P[initial_index-1])
+        relative_change = (final_pressure-initial_pressure)
+        time_list = (va)
+        #file = (float(file[:-4]))
+    else: 
+        relative_change = 0
+        time_list = 0
+        initial_pressure = self.file_df.Target_P[3] 
+        final_pressure = self.file_df.Target_P[3] 
+    filling_list = [[np.float(self.file_number),self.date_stamp,self.target_number,relative_change,high_pressure_ave,high_pressure_std,low_pressure_ave,low_pressure_std,pressure_irradiation_ave,
+    pressure_irradiation_std]]
+    df_filling_volume_i = pd.DataFrame(filling_list,columns=columns_names.COLUMNS_FILLING)
+    self.df_filling_volume = self.df_filling_volume.append(df_filling_volume_i,ignore_index=True)

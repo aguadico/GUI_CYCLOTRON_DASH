@@ -137,8 +137,6 @@ def get_source_parameters(excel_data_df,current):
     source_voltage = excel_data_df.Arc_V[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     gas_flow = excel_data_df.Gas_flow[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     source_current = excel_data_df.Arc_I[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
-    print ("CURRENT")
-    print (source_current)
     return source_voltage,source_current,gas_flow
 
 def get_rf_parameters(excel_data_df,current):
@@ -182,12 +180,12 @@ def get_target_pressure(excel_data_df,current):
     return target_pressure
 
 def get_target_pressure_irradiation(excel_data_df,current):
-    max_current = 0.9*(np.max(excel_data_df['Target_I'].astype(float)))
+    max_current = 0.85*(np.max(excel_data_df['Target_I'].astype(float)))
     target_pressure = excel_data_df.Target_P[excel_data_df['Target_I'].astype(float) > float(max_current)].astype(float)
     return target_pressure
 
 def get_target_parameters(excel_data_df):
-    max_current = 0.9*(np.max(excel_data_df['Target_I'].astype(float)))
+    max_current = 0.85*(np.max(excel_data_df['Target_I'].astype(float)))
     target_current = excel_data_df.Target_I[excel_data_df['Target_I'].astype(float) > float(max_current)].astype(float)
     return target_current,max_current
 
@@ -227,26 +225,6 @@ def get_pressure_fluctuations(self,va):
     df_pressure_fluctuations_i = pd.DataFrame(pressure_fluctuations,columns=columns_names.COLUMNS_FLUCTUATIONS)
     self.df_pressure_fluctuations = self.df_pressure_fluctuations.append(df_pressure_fluctuations_i,ignore_index=True)
 
-
-def get_filling_volume(self,va):
-    if float(self.file_df.Target_P[3]) < 100:
-        va += 1
-        values_filling = self.file_df.Target_P[self.file_df.Target_P.astype(float) < 100] 
-        initial_index = self.file_df.Target_P[self.file_df.Target_P.astype(float) > 100].index[0] 
-        p_values = self.file_df.Target_P[3:initial_index-1]
-        minimal_index = p_values[p_values.astype(float) == np.min(p_values.astype(float))].index[0]
-        initial_pressure = float(self.file_df.Target_P[minimal_index])
-        final_pressure = float(self.file_df.Target_P[initial_index-1])
-        relative_change = (final_pressure-initial_pressure)/final_pressure
-        time_list = (va)
-        #file = (float(file[:-4]))
-        relative_change_all = relative_change
-    else: 
-        relative_change_all = 0
-        time_list = 0
-    filling_list = [[np.float(self.file_number),time_list,self.date_stamp,self.target_number,relative_change_all]]
-    df_filling_volume_i = pd.DataFrame(filling_list,columns=columns_names.COLUMNS_FILLING)
-    self.df_filling_volume = self.df_filling_volume.append(df_filling_volume_i,ignore_index=True)
   
 
 def get_statistic_values(value):
