@@ -61,14 +61,14 @@ COLUMNS_TO_PLOT = {"FOILS_1":["CUMULATIVE_TARGET_1_FOIL_1","CUMULATIVE_TARGET_1_
 "FOILS_2":["CUMULATIVE_TARGET_2_FOIL_1","CUMULATIVE_TARGET_2_FOIL_2","CUMULATIVE_TARGET_2_FOIL_3","CUMULATIVE_TARGET_2_FOIL_4","CUMULATIVE_TARGET_2_FOIL_5","CUMULATIVE_TARGET_2_FOIL_6"],
 "TARGET_COLLIMATORS_1":["CUMULATIVE_TARGET_1","CUMULATIVE_CURRENT_COLL_R_1","CUMULATIVE_CURRENT_COLL_L_1"],
 "TARGET_COLLIMATORS_2":["CUMULATIVE_TARGET_2","CUMULATIVE_CURRENT_COLL_R_2","CUMULATIVE_CURRENT_COLL_L_2"],
-"TARGET_SOURCE":["CUMULATIVE_SOURCE","CUMULATIVE_TARGET_1","CUMULATIVE_TARGET_2"],
+"SOURCE_TARGETS":["CUMULATIVE_SOURCE","CUMULATIVE_TARGET_1","CUMULATIVE_TARGET_2"],
 }
 
 TEXT_TO_PLOT = {"FOILS_1":["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"],
 "FOILS_2":["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"],
 "TARGET_COLLIMATORS_1":["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"],
 "TARGET_COLLIMATORS_2":["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"],
-"TARGET_SOURCE":["Source [Ah]","Target Position " + str(cyclotron_information.physical_targets[0]) +  " [mAh]","Target Position "+ str(cyclotron_information.physical_targets[1]) + " [mAh]"],
+"SOURCE_TARGETS":["Source [Ah]","Target Position " + str(cyclotron_information.physical_targets[0]) +  " [mAh]","Target Position "+ str(cyclotron_information.physical_targets[1]) + " [mAh]"],
 }
 
 
@@ -100,66 +100,79 @@ def display_time_series(ticker,ticker_horizontal,ticker_layer,list_of_contents):
     return fig
 
 
-@app.callback(
-    Output("time-series-chart4", "figure"), 
-    Input('loading_output_1', 'children'), 
-    )
-def display_total_charge(loading): 
-    text_to_plot = ["Source [Ah]","Target Position " + str(cyclotron_information.physical_targets[0]) +  " [mAh]","Target Position "+ str(cyclotron_information.physical_targets[1]) + " [mAh]"]
-    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_SOURCE"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1"].astype(float))[0]/1000,
-    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2"].astype(float))[0]/1000]    
-    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot," ","charge_source_target")
-    return fig_status
+#@app.callback(
+#    Output("time-series-chart4", "figure"), 
+#    Input('loading_output_1', 'children'), 
+#    )
+#def display_total_charge(loading): 
+#    text_to_plot = ["Source [Ah]","Target Position " + str(cyclotron_information.physical_targets[0]) +  " [mAh]","Target Position "+ str(cyclotron_information.physical_targets[1]) + " [mAh]"]
+#    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_SOURCE"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1"].astype(float))[0],
+#    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2"].astype(float))[0]]    
+#    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot," ","SOURCE_TARGETS")
+#    return fig_status
 
 
 @app.callback(
-    Output("foils_1_4_5_6", "figure"), 
-    Input('loading_output_1', 'children'), 
-    )
-def display_foils_1_4_5_6(loading): 
-    dict_key = "FOILS_1"
-    fig_status = plotting_bars(dict_key)
-    return fig_status
-
-@app.callback(
+    Output("time-series-chart4", "figure"),
+    Output("target_collimators_1", "figure"),
+    Output("target_collimators_2", "figure"),
+    Output("foils_1_4_5_6", "figure"),
     Output("foils_2_4_5_6", "figure"), 
     Input('loading_output_1', 'children'),  
     )
 def display_foils_2_4_5_6(loading): 
-    dict_key = "FOILS_2"
-    fig_status = plotting_bars(dict_key)
-    return fig_status
+    dict_keys = ["SOURCE_TARGETS","TARGET_COLLIMATORS_1","TARGET_COLLIMATORS_2","FOILS_1","FOILS_2"]
+    limits = ["SOURCE_TARGETS","TARGET_COLLIMATORS","TARGET_COLLIMATORS","FOILS","FOILS"]
+    titles = ["","Target Position " + str(cyclotron_information.physical_targets[0]),"Target Position " + str(cyclotron_information.physical_targets[1]),
+    "Target Position " + str(cyclotron_information.physical_targets[0]),"Target Position " + str(cyclotron_information.physical_targets[1])]
+    fig_size = [500,500,500,800,800]
+    figs = []
+    for dict_value,limit,fig_size_i,title in zip(dict_keys,limits,fig_size,titles):
+        figs.append(plotting_bars(dict_value,limit,fig_size_i,title))
+    return figs[0],figs[1],figs[2],figs[3],figs[4]
 
-def plotting_bars(element):
+#@app.callback(
+#    Output("target_collimators_1", "figure"),
+#    Output("target_collimators_2", "figure"),
+#    Input('loading_output_1', 'children')
+#        )
+#def display_target_collimators_1(fig): 
+#    dict_key_1 = "TARGET_COLLIMATORS_1"
+#    dict_key_2 = "TARGET_COLLIMATORS_2"
+#    limits = "TARGET_COLLIMATORS"
+#    fig_size = 800
+#    fig_status_1 = plotting_bars(dict_key_1,limits,fig_size)
+#    fig_status_2 = plotting_bars(dict_key_2,limits,fig_size)
+#    print ("INFORMATION")
+#    print (cyclotron_information.df_summary)
+#    return fig_status_1,fig_status_2
+
+def plotting_bars(element,limits,fig_size,title):
     text_to_plot = TEXT_TO_PLOT[element]
     values_to_plot = []
     for value in COLUMNS_TO_PLOT[element]:
         values_to_plot.append(np.array(getattr(cyclotron_information.df_summary,value).astype(float))[0])
-    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Target Position " + str(cyclotron_information.physical_targets[1]) ,"charge_foils")
-    fig_status.update_layout(height=800) 
+    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,title ,limits)
+    fig_status.update_layout(height=fig_size) 
     return fig_status
 
-@app.callback(
-    Output("target_collimators_1", "figure"),
-    Input('loading_output_1', 'children')
-        )
-def display_target_collimators_1(fig): 
-    text_to_plot = ["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"]
-    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1"].astype(float)/1000)[0],np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_R_1"].astype(float))[0],
-    np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_L_1"].astype(float))[0]]   
-    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Position " + str(cyclotron_information.physical_targets[0]) ,"charge_collimators_target")
-    return fig_status
 
-@app.callback(
-    Output("target_collimators_2", "figure"),
-    Input('loading_output_1', 'children'), 
-    )
-def display_target_collimators_2(fig): 
-    text_to_plot = ["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"]
-    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2"].astype(float)/1000)[0],np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_R_2"].astype(float))[0],
-    np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_L_2"].astype(float))[0]]
-    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Position " + str(cyclotron_information.physical_targets[1]),"charge_collimators_target")
-    return fig_status
+    #text_to_plot = ["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"]
+    #values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1"].astype(float)/1000)[0],np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_R_1"].astype(float))[0],
+    #np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_L_1"].astype(float))[0]]   
+    #fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Position " + str(cyclotron_information.physical_targets[0]) ,"charge_collimators_target")
+    #return fig_status
+
+#@app.callback(
+#    Output("target_collimators_2", "figure"),
+#    Input('loading_output_1', 'children'), 
+#    )
+#def display_target_collimators_2(fig): 
+#    text_to_plot = ["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"]
+#    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2"].astype(float)/1000)[0],np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_R_2"].astype(float))[0],
+#    np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_L_2"].astype(float))[0]]
+#    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Position " + str(cyclotron_information.physical_targets[1]),"charge_collimators_target")
+#    return fig_status
 
 
 @app.callback(Output('loading_output_1', 'children'),

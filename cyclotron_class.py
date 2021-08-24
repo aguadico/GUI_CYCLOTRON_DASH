@@ -79,8 +79,8 @@ class cyclotron:
         #all_dataframes = [self.df_source,self.df_vacuum,self.df_magnet,self.df_extraction,self.df_rf]
         source_performance = np.array(self.source_performance_total)
         self.source_performance = source_performance[source_performance > 0]
-        self.df_summary["CUMULATIVE_TARGET_1"] = df_target_1.CURRENT_TARGET.sum()
-        self.df_summary["CUMULATIVE_TARGET_2"] = df_target_2.CURRENT_TARGET.sum()
+        self.df_summary["CUMULATIVE_TARGET_1"] = df_target_1.CURRENT_TARGET.astype(float).sum()/1000
+        self.df_summary["CUMULATIVE_TARGET_2"] = df_target_2.CURRENT_TARGET.astype(float).sum()/1000
         self.df_summary["CUMULATIVE_CURRENT_COLL_L_1"] = df_target_1.CURRENT_COLL_L.sum()
         self.df_summary["CUMULATIVE_CURRENT_COLL_L_2"] = df_target_2.CURRENT_COLL_L.sum()
         self.df_summary["CUMULATIVE_CURRENT_COLL_R_1"] = df_target_1.CURRENT_COLL_R.sum()

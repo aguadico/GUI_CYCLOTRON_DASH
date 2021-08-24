@@ -13,11 +13,11 @@ import cyclotron_class
 import tfs
 import getting_subsystems_data_alt
 
-RANGE_VALUES_CHARGE = {"charge_collimators_target":[[[0,10],[10,12.5],[12.5,15]],[[0,300],[300,500],[500,700]],[[0,300],[300,500],[500,700]]],
-"charge_foils": [[[0,2000],[2000,2500],[2500,3000]]] * 6,
-"charge_source_target":[[[0,100],[100,125],[125,150]],[[0,10],[10,12.5],[12.5,15]],[[0,10],[10,12.5],[12.5,15]]]}
-POSITION = {"charge_collimators_target":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],"charge_source_target":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],
-"charge_foils":[[0.8,0.9],[0.64,0.74],[0.48,0.58],[0.32, 0.42],[0.16, 0.26],[0.0, 0.1]]}
+RANGE_VALUES_CHARGE = {"TARGET_COLLIMATORS":[[[0,10],[10,12.5],[12.5,15]],[[0,300],[300,500],[500,700]],[[0,300],[300,500],[500,700]]],
+"FOILS": [[[0,2000],[2000,2500],[2500,3000]]] * 6,
+"SOURCE_TARGETS":[[[0,100],[100,125],[125,150]],[[0,10],[10,12.5],[12.5,15]],[[0,10],[10,12.5],[12.5,15]]]}
+POSITION = {"TARGET_COLLIMATORS":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],"SOURCE_TARGETS":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],
+"FOILS":[[0.8,0.9],[0.64,0.74],[0.48,0.58],[0.32, 0.42],[0.16, 0.26],[0.0, 0.1]]}
 
 def general_status_plot(fig_status,values_to_plot,range_values,y_position,text_to_plot):
     for i in range(len(values_to_plot)):
@@ -101,6 +101,8 @@ def getting_information(cyclotron_information,target_1,target_2,list_of_contents
         max_current = np.max(cyclotron_information.file_df.Target_I.astype(float))    
         #if ((pre_irradiation_len_relative) < 0.3 and float(max_current) > 15):
         if (float(max_current) > 15):
+            print ("MAX CURRENT")
+            print (cyclotron_information.file_df.Target_I[cyclotron_information.file_df.Target_I.astype(float)> 20])
             cyclotron_information.file_output()
             if float(cyclotron_information.target_number) in [1.0,2.0,3.0]: 
                print ("THIS TARGET")

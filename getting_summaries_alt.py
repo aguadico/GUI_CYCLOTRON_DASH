@@ -52,7 +52,12 @@ def get_summary_magnet(self):
     start_isochronism = np.min(self.df_isochronism.Magnet_I)
     end_isochronism = np.max(self.df_isochronism.Magnet_I)
     iso_average = np.average([start_isochronism,end_isochronism])
-    selected_value = self.df_isochronism.Magnet_I.iloc[-1]
+    print ("ISOCHRONISM")
+    print (self.df_isochronism.Magnet_I)
+    if len(self.df_isochronism.Magnet_I) == 0:
+        selected_value =  (self.df_subsystem_magnet.Magnet_I.iloc[0])
+    elif len(self.df_isochronism.Magnet_I) != 0:
+        selected_value = self.df_isochronism.Magnet_I.iloc[-1]
     selected_value_rel = 50/(iso_average/selected_value)  
     magnet_current = pd.concat([self.time_all,self.magnet_current_total],axis=1,keys=["Time","Current_I"])
     time_values = magnet_current.drop_duplicates(subset="Current_I").Time.astype(str)
