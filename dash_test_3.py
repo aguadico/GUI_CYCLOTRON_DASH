@@ -57,6 +57,19 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app.layout = app_layout_1.layout
 
 
+COLUMNS_TO_PLOT = {"FOILS_1":["CUMULATIVE_TARGET_1_FOIL_1","CUMULATIVE_TARGET_1_FOIL_2","CUMULATIVE_TARGET_1_FOIL_3","CUMULATIVE_TARGET_1_FOIL_4","CUMULATIVE_TARGET_1_FOIL_5","CUMULATIVE_TARGET_1_FOIL_6"],
+"FOILS_2":["CUMULATIVE_TARGET_2_FOIL_1","CUMULATIVE_TARGET_2_FOIL_2","CUMULATIVE_TARGET_2_FOIL_3","CUMULATIVE_TARGET_2_FOIL_4","CUMULATIVE_TARGET_2_FOIL_5","CUMULATIVE_TARGET_2_FOIL_6"],
+"TARGET_COLLIMATORS_1":["CUMULATIVE_TARGET_1","CUMULATIVE_CURRENT_COLL_R_1","CUMULATIVE_CURRENT_COLL_L_1"],
+"TARGET_COLLIMATORS_2":["CUMULATIVE_TARGET_2","CUMULATIVE_CURRENT_COLL_R_2","CUMULATIVE_CURRENT_COLL_L_2"],
+"TARGET_SOURCE":["CUMULATIVE_SOURCE","CUMULATIVE_TARGET_1","CUMULATIVE_TARGET_2"],
+}
+
+TEXT_TO_PLOT = {"FOILS_1":["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"],
+"FOILS_2":["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"],
+"TARGET_COLLIMATORS_1":["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"],
+"TARGET_COLLIMATORS_2":["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"],
+"TARGET_SOURCE":["Source [Ah]","Target Position " + str(cyclotron_information.physical_targets[0]) +  " [mAh]","Target Position "+ str(cyclotron_information.physical_targets[1]) + " [mAh]"],
+}
 
 
 
@@ -104,12 +117,8 @@ def display_total_charge(loading):
     Input('loading_output_1', 'children'), 
     )
 def display_foils_1_4_5_6(loading): 
-    text_to_plot = ["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"]
-    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_1"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_2"].astype(float))[0],
-    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_3"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_4"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_5"].astype(float))[0],
-    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1_FOIL_6"].astype(float))[0]]
-    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Target Position " + str(cyclotron_information.physical_targets[0]) ,"charge_foils")
-    fig_status.update_layout(height=800)  
+    dict_key = "FOILS_1"
+    fig_status = plotting_bars(dict_key)
     return fig_status
 
 @app.callback(
@@ -117,10 +126,15 @@ def display_foils_1_4_5_6(loading):
     Input('loading_output_1', 'children'),  
     )
 def display_foils_2_4_5_6(loading): 
-    text_to_plot = ["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"]
-    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_1"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_2"].astype(float))[0],
-    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_3"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_4"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_5"].astype(float))[0],
-    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2_FOIL_6"].astype(float))[0]]
+    dict_key = "FOILS_2"
+    fig_status = plotting_bars(dict_key)
+    return fig_status
+
+def plotting_bars(element):
+    text_to_plot = TEXT_TO_PLOT[element]
+    values_to_plot = []
+    for value in COLUMNS_TO_PLOT[element]:
+        values_to_plot.append(np.array(getattr(cyclotron_information.df_summary,value).astype(float))[0])
     fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Target Position " + str(cyclotron_information.physical_targets[1]) ,"charge_foils")
     fig_status.update_layout(height=800) 
     return fig_status
@@ -164,7 +178,6 @@ def update_output(list_of_contents,list_of_names, list_of_dates):
         message_to_show = "Click on Select a subsystem to display the time-evolution"
     return message_to_show
  
-
 
 
 
