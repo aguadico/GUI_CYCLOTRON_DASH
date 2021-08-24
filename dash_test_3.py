@@ -77,12 +77,9 @@ def daily_report(ticker,ticker_layer,tabs,input_file):
     Input("ticker", "value"),
     Input("ticker_horizontal", "value"),
     Input("ticker_layer", "value"),
-    Input('tabs-with-classes', 'value'),
-    Input('upload_data', 'contents'),
-    State('upload_data', 'filename'),
-    State('upload_data', 'last_modified')
+    Input('upload_data', 'contents')
     )
-def display_time_series(ticker,ticker_horizontal,ticker_layer,tabs,list_of_contents,list_of_names, list_of_dates):
+def display_time_series(ticker,ticker_horizontal,ticker_layer,list_of_contents):
     fig = make_subplots(rows=3, cols=1,shared_xaxes=True,
                         vertical_spacing=0.02)
     fig.update_layout(height=1500)

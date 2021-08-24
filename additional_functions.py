@@ -11,6 +11,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import cyclotron_class
 import tfs
+import getting_subsystems_data_alt
 
 RANGE_VALUES_CHARGE = {"charge_collimators_target":[[[0,10],[10,12.5],[12.5,15]],[[0,300],[300,500],[500,700]],[[0,300],[300,500],[500,700]]],
 "charge_foils": [[[0,2000],[2000,2500],[2500,3000]]] * 6,
@@ -159,6 +160,11 @@ def parse_contents(cyclotron_information,contents, filename, date):
         all_values[5],all_values[6],all_values[7],all_values[8],all_values[9],all_values[10],all_values[11],
         all_values[12],all_values[13],all_values[14],all_values[15],all_values[16],all_values[17],all_values[18],
         all_values[19],all_values[20],all_values[21],all_values[22],all_values[23],all_values[24],all_values[25])),columns=column_names_nf)
+    cyclotron_information.file_df["Collimators"] = cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float)
+    cyclotron_information.file_df["Losses"] = (1-(cyclotron_information.file_df.Target_I.astype(float)+cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float))/cyclotron_information.file_df.Foil_I.astype(float))*100
+    cyclotron_information.file_df["Relative_target"] = cyclotron_information.file_df.Target_I.astype(float)/cyclotron_information.file_df.Foil_I.astype(float)
+    cyclotron_information.file_df["Vacuum_mbar"] = cyclotron_information.file_df.Vacuum_P.astype(float)*1e5
+    cyclotron_information.df_isochronism = getting_subsystems_data_alt.get_isochronism(cyclotron_information.file_df)
     cyclotron_information.target_number = (df.columns[0][9:10])
     # el file_number esta dentro
     cyclotron_information.file_number = (df.columns[0][35:40])
