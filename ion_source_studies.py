@@ -27,16 +27,11 @@ def returning_current(cyclotron_data,funct_fit):
 	#time_dt = pd.to_datetime(time, format='%H:%M:%S')
 	# CREATE A DF SUMMARY OF THE PREVIOUS VARIABLES.
 	df_summary = pd.DataFrame(list(zip(y_value_to_fit.astype(float),x_value_target.astype(float),x_value_collimators.astype(float),x_value_vacuum.astype(float),x_value_foil.astype(float))),columns=["I_SOURCE","I_TARGET","I_COLLIMATOR","VACUUM","I_FOIL"])
-	print ("DF SUMMARY")
-	print (data_df)
-	print (df_summary)
 	# DATAFRAME WITH THE INDEPENDENT VARIABLES
 	X = pd.DataFrame(np.c_[df_summary['I_TARGET'].astype(float), df_summary['I_COLLIMATOR'].astype(float),(df_summary['VACUUM'].astype(float)-np.min(df_summary['VACUUM'].astype(float)))*1e5], columns=['I_TARGET','I_COLLIMATOR','VACUUM'])
 	# DATAFRAME WITH DEPENDENT VARIABLE, IMPORTANT (HERE THE VACUUM IS RELATIVE TO THE MINIMUN VALUE (WITH BEAM))
 	Y = df_summary.I_SOURCE
 	#CREATING A SUBSET FOR TRAINNING AND TESTING (FOR LATTER)
-	print ("ORIGINAL DATA")
-	print (X)
 	# CURVE FIT
 	if len(X.I_TARGET) > 20:
 	   #X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size = 0.2, random_state=9)
@@ -71,6 +66,13 @@ def returning_current(cyclotron_data,funct_fit):
 		sigma_a = 0
 		x = 0
 		sigma_x = 0
+	print ("ION SOURCE PERFORMANCE")
+	print (x)
+	print (sigma_x)
+	cyclotron_data.ion_source_performance = cyclotron_data.ion_source_performance.append({'TARGET':cyclotron_data.target_number,'SOURCE_PERFORMANCE':x,'SOURCE_PERFORMANCE_ERROR':sigma_x}, ignore_index=True)
+	#cyclotron_data.ion_source_performance = cyclotron_data.ion_source_performance.append({'SOURCE_PERFORMANCE':x}, ignore_index=True)
+	#cyclotron_data.ion_source_performance = cyclotron_data.ion_source_performance.append({'SOURCE_PERFORMANCE_ERROR':sigma_x}, ignore_index=True)
+	print (cyclotron_data.ion_source_performance)
 	cyclotron_data.source_performance_total.append(x)
 	cyclotron_data.source_performance_total_error.append(sigma_x)
 

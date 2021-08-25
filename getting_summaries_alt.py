@@ -17,16 +17,19 @@ def get_summary_ion_source(self):
     float(max_source_current),float(min_source_current),float(ave_source_current),float(std_source_current),
     float(max_source_voltage),float(min_source_voltage),float(ave_source_voltage),float(std_source_voltage),
     float(max_gas_flow),
-    float(max_ratio_current),float(min_ratio_current),float(ave_ratio_current),float(std_ratio_current)]]
+    float(max_ratio_current),float(min_ratio_current),float(ave_ratio_current),float(std_ratio_current),float(std_source_current)/float(ave_source_current)*100,0]]
     df_source_i = pd.DataFrame(df_source_values,columns=columns_names.COLUMNS_SOURCE)
     self.df_source = self.df_source.append(df_source_i,ignore_index=True)
 
 
 def get_summary_vacuum(self):
     vacuum_level = self.df_subsystem_vacuum.Vacuum_P
+    gas_flow = self.df_subsystem_source.Gas_flow
+    ave_gas_flow,std_gas_flow,max_gas_flow,min_gas_flow = getting_subsystems_data_alt.get_statistic_values(gas_flow) 
     foil_number = np.average((self.df_subsystem_vacuum.Foil_No))
     ave_vacuum,std_vacuum,max_vacuum,min_vacuum = getting_subsystems_data_alt.get_statistic_values(vacuum_level)
-    vacuum_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,float(max_vacuum)*1e5,float(min_vacuum)*1e5,float(ave_vacuum)*1e5,float(std_vacuum)*1e5]]
+    vacuum_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,float(max_vacuum)*1e5,float(min_vacuum)*1e5,float(ave_vacuum)*1e5,float(std_vacuum)*1e5,
+    float(std_vacuum)/float(ave_vacuum),0,float(ave_vacuum)/float(ave_gas_flow)*100,((float(std_vacuum)**2+float(ave_gas_flow)**2))**0.5/float(ave_gas_flow)*100]]
     df_vacuum_i = pd.DataFrame((vacuum_values),columns=columns_names.COLUMNS_VACUUM)
     self.df_vacuum = self.df_vacuum.append(df_vacuum_i,ignore_index=True)
 
@@ -74,7 +77,7 @@ def get_summary_magnet(self):
     elif len(magnet_current.drop_duplicates(subset="Current_I").Time) <= 1:
         delta_minutes = 0
     magnet_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,float(max_magnet_current),float(min_magnet_current),float(ave_magnet_current),float(std_magnet_current),
-    float(start_isochronism),float(end_isochronism),float(selected_value),float(selected_value_rel),float(delta_minutes)]]
+    float(start_isochronism),float(end_isochronism),float(selected_value),float(selected_value_rel),0,float(delta_minutes),0]]
     df_magnet_i = pd.DataFrame((magnet_values),columns=columns_names.COLUMNS_MAGNET)
     self.df_magnet = self.df_magnet.append(df_magnet_i,ignore_index=True)
     
@@ -100,7 +103,9 @@ def get_summary_rf(self):
     min_flap1_pos,ave_flap1_pos,std_flap1_pos,
     max_flap2_pos,min_flap2_pos,ave_flap2_pos,std_flap2_pos,
     self.sparks_number,self.distance_flap_1,self.average_instant_speed_1,self.max_instant_speed_1,self.std_instant_speed_1,
-    self.distance_flap_2,self.average_instant_speed_2,self.max_instant_speed_2,self.std_instant_speed_2]]
+    self.distance_flap_2,self.average_instant_speed_2,self.max_instant_speed_2,self.std_instant_speed_2,
+    ave_reflected_power*100,std_reflected_power*100,std_dee1_voltage/ave_dee1_voltage*100,std_dee2_voltage/ave_dee2_voltage*100,0,0,
+    0,0,0,0,0,0,0]]
     df_rf_i = pd.DataFrame((rf_values),columns=columns_names.COLUMNS_RF)      
     self.df_rf = self.df_rf.append(df_rf_i,ignore_index=True)
 
@@ -161,7 +166,7 @@ def get_summary_beam(self):
     max_extraction_current,min_extraction_current,ave_extraction_current,std_extraction_current,
     max_target_rel,min_target_rel,ave_target_rel,std_target_rel,
     max_extraction_losses,min_extraction_losses,ave_extraction_losses,std_extraction_losses, 
-    max_collimator_total_rel,min_collimator_total_rel, ave_collimator_total_rel, std_collimator_total_rel]]
+    max_collimator_total_rel,min_collimator_total_rel, ave_collimator_total_rel, std_collimator_total_rel,float(std_target_rel)/float(ave_target_rel),0]]
     df_beam_i = pd.DataFrame((beam_values),columns=columns_names.COLUMNS_BEAM )      
     self.df_beam = self.df_beam.append(df_beam_i,ignore_index=True)
 
@@ -195,7 +200,7 @@ def get_filling_volume(self,va):
         time_list = 0
         initial_pressure = self.file_df.Target_P[3] 
         final_pressure = self.file_df.Target_P[3] 
-    filling_list = [[np.float(self.file_number),self.date_stamp,self.target_number,relative_change,high_pressure_ave,high_pressure_std,low_pressure_ave,low_pressure_std,pressure_irradiation_ave,
+    filling_list = [[np.float(self.file_number),self.date_stamp,self.target_number,relative_change,0,high_pressure_ave,high_pressure_std,low_pressure_ave,low_pressure_std,pressure_irradiation_ave,
     pressure_irradiation_std]]
     df_filling_volume_i = pd.DataFrame(filling_list,columns=columns_names.COLUMNS_FILLING)
     self.df_filling_volume = self.df_filling_volume.append(df_filling_volume_i,ignore_index=True)
