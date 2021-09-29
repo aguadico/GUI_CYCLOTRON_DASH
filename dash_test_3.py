@@ -51,9 +51,6 @@ app = JupyterDash(external_stylesheets=[dbc.themes.SLATE])
 app.title = "Cyclotron Analytics"
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-#app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
-
 app.layout = app_layout_1.layout
 
 
@@ -90,13 +87,15 @@ def daily_report(ticker,ticker_layer,tabs,input_file):
     Input("ticker", "value"),
     Input("ticker_horizontal", "value"),
     Input("ticker_layer", "value"),
-    Input('upload_data', 'contents')
+    Input('upload_data', 'contents'),
+    Input('tabs-with-classes', 'value')
     )
-def display_time_series(ticker,ticker_horizontal,ticker_layer,list_of_contents):
-    fig = make_subplots(rows=3, cols=1,shared_xaxes=True,
-                        vertical_spacing=0.02)
-    fig.update_layout(height=1500)
+def display_time_series(ticker,ticker_horizontal,ticker_layer,list_of_contents,tabs):
+    #fig = make_subplots(rows=3, cols=1,shared_xaxes=True,
+    #                    vertical_spacing=0.02)
+    print ("ENTERING HEREEE!!!""")
     fig = cyclotron_information.plotting_statistics(ticker,ticker_horizontal,ticker_layer)
+    fig.update_layout(height=1500)
     return fig
 
 
@@ -118,9 +117,10 @@ def display_time_series(ticker,ticker_horizontal,ticker_layer,list_of_contents):
     Output("target_collimators_2", "figure"),
     Output("foils_1_4_5_6", "figure"),
     Output("foils_2_4_5_6", "figure"), 
-    Input('loading_output_1', 'children'),  
+    Input('loading_output_1', 'children'), 
+    Input('tabs-with-classes', 'value'), 
     )
-def display_foils_2_4_5_6(loading): 
+def display_foils_2_4_5_6(loading,tabs): 
     dict_keys = ["SOURCE_TARGETS","TARGET_COLLIMATORS_1","TARGET_COLLIMATORS_2","FOILS_1","FOILS_2"]
     limits = ["SOURCE_TARGETS","TARGET_COLLIMATORS","TARGET_COLLIMATORS","FOILS","FOILS"]
     titles = ["","Target Position " + str(cyclotron_information.physical_targets[0]),"Target Position " + str(cyclotron_information.physical_targets[1]),
@@ -152,8 +152,12 @@ def plotting_bars(element,limits,fig_size,title):
     values_to_plot = []
     for value in COLUMNS_TO_PLOT[element]:
         values_to_plot.append(np.array(getattr(cyclotron_information.df_summary,value).astype(float))[0])
-    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,title ,limits)
-    fig_status.update_layout(height=fig_size) 
+    values = [text_to_plot,values_to_plot]
+    settings = [title,limits,fig_size]
+    fig_status = additional_functions.plotting_charge(cyclotron_information,values,settings)
+    #fig_status.update_layout(height=fig_size) 
+    #fig_status.update_layout(title=settings[0]  ,
+    #font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=60)) 
     return fig_status
 
 
@@ -184,14 +188,14 @@ def update_output(list_of_contents,list_of_names, list_of_dates):
     target_1.__init__(computing_charge_df_alt.df_information)
     target_2.__init__(computing_charge_df_alt.df_information)
     if list_of_contents is not None:
-        additional_functions.getting_information(cyclotron_information,target_1,target_2,list_of_contents, list_of_names, list_of_dates)
+        lists = zip(list_of_contents, list_of_names, list_of_dates)
+        additional_functions.getting_information(cyclotron_information,target_1,target_2,lists)
     if (list_of_names) is None:
         message_to_show = "No data to display"
     else:
         message_to_show = "Click on Select a subsystem to display the time-evolution"
     return message_to_show
  
-
 
 
 @app.callback(Output('loading-output-2', 'children'),

@@ -100,7 +100,7 @@ DATAFRAME_TO_PLOT = {"CHOOSE":[["df_zero"]]*3,
 "TARGET":[["volume_information"]]*4,
 "MAGNET":[["df_summary_magnet"]]*3}
 
-REFERENCE_VALUE_DICTIONARY = {"CHOOSE":[[[]],[[]]],
+REFERENCE_VALUE_DICTIONARY = {"CHOOSE":[[[]],[[]],[[]]],
 "SOURCE":[[[500,700,850,"Upper limit"]],[[1.8,1.9,2,"Upper limit"]],[[5.5,6,6.5,"Upper limit"],[3.5,3,2.5,"Lower limit"]],[[3.5,4.5,6,"Upper limit"]],[[5,10,15,"Upper limit"]]],
 "BEAM":[[[600,700,800]],[[110,120,130]],[[20,25,35]],[[95,85,70]],[[-0.5,-1,-2],[0.5,1,2]]],
 "VACUUM":[[[1.8,1.9,2,"Upper limit"]],[[60,50,40,"Lower limit"]],[[500,700,800,"Upper limit"]],[[2,5,7.5,"Upper limit"]],[[0.35,0.4,0.5,"Upper limit"]]],

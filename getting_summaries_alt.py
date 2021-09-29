@@ -166,7 +166,7 @@ def get_summary_beam(self):
     max_extraction_current,min_extraction_current,ave_extraction_current,std_extraction_current,
     max_target_rel,min_target_rel,ave_target_rel,std_target_rel,
     max_extraction_losses,min_extraction_losses,ave_extraction_losses,std_extraction_losses, 
-    max_collimator_total_rel,min_collimator_total_rel, ave_collimator_total_rel, std_collimator_total_rel,float(std_target_rel)/float(ave_target_rel),0]]
+    max_collimator_total_rel,min_collimator_total_rel, ave_collimator_total_rel, std_collimator_total_rel,float(std_target_rel)/float(ave_target_rel)*100,0]]
     df_beam_i = pd.DataFrame((beam_values),columns=columns_names.COLUMNS_BEAM )      
     self.df_beam = self.df_beam.append(df_beam_i,ignore_index=True)
 

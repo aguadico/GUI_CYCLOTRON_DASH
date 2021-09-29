@@ -106,7 +106,9 @@ def daily_report(ticker,ticker_layer,tabs,input_file,cyclotron_information):
            fig_logfile.update_xaxes(title_text="Current [A]", row=2, col=1)
         values_to_plot = getattr(dataframe_to_plot,COLUMNS_TO_PLOT[ticker][i][j]).astype(float)
         horizontal_values = getattr(dataframe_to_plot,HORIZONTAL_VALUES[ticker][i][j])
-        fig_logfile = additional_functions.plotting_simple_no_error(fig_logfile,horizontal_values,values_to_plot,Y_LABEL[ticker][i][j],i+1,1,COLORS[j],LEGEND[ticker][i][j],10)
+        values = [horizontal_values,values_to_plot,Y_LABEL[ticker][i][j]]
+        settings = [i+1,1,COLORS[j],LEGEND[ticker][i][j],10]
+        fig_logfile = additional_functions.plotting_simple_no_error(fig_logfile,values,settings)
     reference_value = REFERENCE_VALUE_DICTIONARY[ticker] 
     if ticker_layer == ["ADRF"]:
        for i in range(len(reference_value)):

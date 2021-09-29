@@ -19,12 +19,12 @@ RANGE_VALUES_CHARGE = {"TARGET_COLLIMATORS":[[[0,10],[10,12.5],[12.5,15]],[[0,30
 POSITION = {"TARGET_COLLIMATORS":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],"SOURCE_TARGETS":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],
 "FOILS":[[0.8,0.9],[0.64,0.74],[0.48,0.58],[0.32, 0.42],[0.16, 0.26],[0.0, 0.1]]}
 
-def general_status_plot(fig_status,values_to_plot,range_values,y_position,text_to_plot):
-    for i in range(len(values_to_plot)):
+def general_status_plot(fig_status,values,range_values,y_position):
+    for i in range(len(values[1])):
         fig_status.add_trace(go.Indicator(
-    mode = "number+gauge", value = values_to_plot[i][0],
+    mode = "number+gauge", value = values[1][i][0],
     domain = {'x': [0.25, 1], 'y': y_position[i]},
-    title = {'text' :text_to_plot[i]},
+    title = {'text' :values[0][i]},
     gauge = {
         'shape': "bullet",
         'axis': {'range': [None, np.max(range_values[i])]},
@@ -37,62 +37,57 @@ def general_status_plot(fig_status,values_to_plot,range_values,y_position,text_t
         }))
     return fig_status
 
-def return_fig(fig_status,text_to_plot,values_to_plot,range_values,range_element):
+def return_fig(fig_status,values,range_values,range_element):
     y_position = POSITION[range_element]    
-    fig_status = general_status_plot(fig_status,values_to_plot,range_values,y_position,text_to_plot)
-    fig_status.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='#FFFFFF',font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=35))  
+    fig_status = general_status_plot(fig_status,values,range_values,y_position)
+    #fig_status.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+    #        plot_bgcolor='#FFFFFF',font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=35))  
     return fig_status
 
-def plotting_charge(cyclotron_information,text_to_plot,values_to_plot,top_text,range_element):
-    range_values = RANGE_VALUES_CHARGE[range_element]
+def plotting_charge(cyclotron_information,values,settings):
+    range_values = RANGE_VALUES_CHARGE[settings[1]]
     fig_status = go.Figure()
-    fig_status = return_fig(fig_status,text_to_plot,values_to_plot,range_values,range_element)
-    fig_status.update_layout(title=top_text  ,
-    font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=60)) 
+    fig_status = return_fig(fig_status,values,range_values,settings[1])
+    fig_status.update_layout(height=settings[2]) 
+    fig_status.update_layout(title=settings[0]  ,
+    font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=100)) 
     return fig_status
 
-def plotting_simple_name(fig,x_values,y_values,y_values_error,units,position_x,position_y,colori,markersi,namei,reference_value,ticker_layer):
-    fig.add_trace(go.Scatter(x=x_values, y=y_values,name=namei,mode='markers',                                                         
-    marker=go.Marker(dict(size=12,color=colori,line=dict(width=2,color=markersi))),
+def plotting_simple_name(fig,values,settings):
+    fig.add_trace(go.Scatter(x=values[0], y=values[1],name=settings[4],mode='markers',                                                         
+    marker=go.Marker(dict(size=12,color=settings[2],line=dict(width=2,color=settings[3]))),
         error_y=dict(
             type='data',
             symmetric=True,
-            array=y_values_error
-            )),row=position_x, col=position_y)
+            array=values[2]
+            )),row=settings[0], col=settings[1])
     print ("TICKER LAYER")
-    print (ticker_layer)
-    if ticker_layer == ["ADRF"]:
+    print (settings[5])
+    if settings[5] == ["ADRF"]:
         for i in range(len(reference_value)):
              if len(reference_value[i]) > 0:
-                fig.add_hrect(y0=reference_value[i][1], y1=reference_value[i][2], line_width=0, fillcolor="red", opacity=0.05,row=position_x, col=position_y)
-                fig.add_hrect(y0=reference_value[i][0], y1=reference_value[i][1], line_width=0, fillcolor="orange", opacity=0.05,row=position_x, col=position_y)
-                fig.add_hline(y=reference_value[i][1], line_dash="dot",line_color="red",annotation_text="High risk area",
+                fig.add_hrect(y0=settings[5][i][1], y1=settings[5][i][2], line_width=0, fillcolor="red", opacity=0.05,row=settings[0], col=settings[1])
+                fig.add_hrect(y0=settings[5][i][0], y1=settings[5][i][1], line_width=0, fillcolor="orange", opacity=0.05,row=settings[0], col=settings[1])
+                fig.add_hline(y=settings[5][i][1], line_dash="dot",line_color="red",annotation_text="High risk area",
                      annotation_position="bottom right",row=position_x, col=position_y)
                 fig.add_hline(y=reference_value[i][0], line_dash="dot",line_color="orange",annotation_text="Medium risk area",
-                     annotation_position="bottom right",row=position_x, col=position_y)
-
-    #fig.add_hline(y=reference_value, line_dash="dot",line_color="green",
-    #          annotation_text="Reference value", 
-    #          annotation_position="bottom right",row=position_x, col=position_y)
-    #fig.add_hline(y=np.average(y_values), line_dash="dot",line_color="blue",
-    #          annotation_text="Average", 
-    #          annotation_position="bottom right",row=position_x, col=position_y)
-    fig.update_yaxes(title_text=units,row=position_x, col=position_y)
+                     annotation_position="bottom right",row=settings[0], col=settings[1])
+    fig.update_yaxes(title_text=values[3],row=settings[0], col=settings[1])
     return fig
 
-def plotting_simple_no_error(fig,x_values,y_values,units,position_x,position_y,colori,namei,sizei):
-    fig.add_trace(go.Scatter(x=x_values, y=y_values,mode='markers',name=namei,                                                        
-    marker=go.Marker(dict(size=sizei,color=colori))),row=position_x, col=position_y)
-    fig.update_yaxes(title_text=units, row=position_x, col=position_y)
+def plotting_simple_no_error(fig,values,settings):
+    fig.add_trace(go.Scatter(x=values[0], y=values[1],mode='markers',name=settings[3],                                                        
+    marker=go.Marker(dict(size=settings[4],color=settings[2]))),row=settings[0], col=settings[1])
+    fig.update_yaxes(title_text=values[2], row=settings[0], col=settings[1])
     return fig
 
 
-def getting_information(cyclotron_information,target_1,target_2,list_of_contents, list_of_names, list_of_dates):
+def getting_information(cyclotron_information,target_1,target_2,lists):
+    #lists = [list_of_contents, list_of_names, list_of_dates]
     #fig_volume.update_layout(paper_bgcolor='rgba(0,0,0,0)',
     #        plot_bgcolor='#F3F6F6',font=dict(size=18,color="#223A38")) 
     #fig_volume.update_layout(title="Individual log " + str(cyclotron_information.file_number) + " Date " + str(cyclotron_information.date_stamp))
-    for c, n, d in zip(list_of_contents, list_of_names, list_of_dates): 
+    for c, n, d in lists: 
         #all_names.append(str(n[:-4]))
         parse_contents(cyclotron_information,c, n, d) 
         target_current = cyclotron_information.file_df.Target_I.astype(float)
@@ -164,7 +159,7 @@ def parse_contents(cyclotron_information,contents, filename, date):
         all_values[19],all_values[20],all_values[21],all_values[22],all_values[23],all_values[24],all_values[25])),columns=column_names_nf)
     cyclotron_information.file_df["Collimators"] = cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float)
     cyclotron_information.file_df["Losses"] = (1-(cyclotron_information.file_df.Target_I.astype(float)+cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float))/cyclotron_information.file_df.Foil_I.astype(float))*100
-    cyclotron_information.file_df["Relative_target"] = cyclotron_information.file_df.Target_I.astype(float)/cyclotron_information.file_df.Foil_I.astype(float)
+    cyclotron_information.file_df["Relative_target"] = cyclotron_information.file_df.Target_I.astype(float)/cyclotron_information.file_df.Foil_I.astype(float)*100
     cyclotron_information.file_df["Vacuum_mbar"] = cyclotron_information.file_df.Vacuum_P.astype(float)*1e5
     cyclotron_information.df_isochronism = getting_subsystems_data_alt.get_isochronism(cyclotron_information.file_df)
     cyclotron_information.target_number = (df.columns[0][9:10])
