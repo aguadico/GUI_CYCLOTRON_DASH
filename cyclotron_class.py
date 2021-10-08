@@ -2,7 +2,7 @@ import columns_names
 import pandas as pd
 import numpy as np
 import saving_trends_alt
-import ion_source_studies
+#import ion_source_studies
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -78,9 +78,9 @@ class cyclotron:
     def current(self,X, a):
          x,y = X
          return a*(x+y) 
-    def current_vaccum(X, a,b):
-         x,y,z = X
-         return a*(x+y) + b*z
+    #def current_vaccum(X, a,b):
+    #     x,y,z = X
+    #     return a*(x+y) + b*z
 
     def get_horizontal_values(self,data,data_target):
         data_filtered = data[data_target.astype(float) > 0.7*np.max(data_target.astype(float))].astype(float)
@@ -176,11 +176,14 @@ class cyclotron:
         self.df_summary["CUMULATIVE_CURRENT_COLL_R_1"] = df_target_1.CURRENT_COLL_R.sum()
         self.df_summary["CUMULATIVE_CURRENT_COLL_R_2"] = df_target_2.CURRENT_COLL_R.sum()
         self.df_summary["CUMULATIVE_SOURCE"] = (df_target_1.CURRENT_SOURCE.sum() + df_target_2.CURRENT_SOURCE.sum())/1000 
-        for i in range(len(COLUMNS_FOIL_CHARGE_1)):
-            self.df_summary[COLUMNS_FOIL_CHARGE_1[i]] = df_target_1.CURRENT_FOIL[df_target_1.FOIL == str(i+1)].sum()       
-        for i in range(len(COLUMNS_FOIL_CHARGE_2)):
-            self.df_summary[COLUMNS_FOIL_CHARGE_2[i]] = df_target_2.CURRENT_FOIL[df_target_2.FOIL == str(i+1)].sum() 
-    
+        self.__selecting_target_data(df_target_1,COLUMNS_FOIL_CHARGE_1)
+        self.__selecting_target_data(df_target_2,COLUMNS_FOIL_CHARGE_2)
+        
+
+    def __selecting_target_data(self,df_target,columns):
+        for i in range(len(columns)):
+            self.df_summary[columns[i]] = df_target.CURRENT_FOIL[df_target.FOIL == str(i+1)].sum() 
+
     def getting_sub_dataframe(self,data,target):
         filtered_data = data[data.TARGET.astype(float) == float(target)]
         return (filtered_data)
