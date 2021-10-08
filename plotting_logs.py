@@ -79,12 +79,9 @@ LEGEND = {"CHOOSE":[[" "]]*3,
 "TARGET":[["Target current"],["Target pressure"],["Extraction"]],
 "MAGNET":[["Magnet current"],["Foil current","Target current","Collimators current"]]}
 
-def daily_report(ticker,ticker_layer,tabs,input_file,cyclotron_information):     
-    row_number = ROW_NUMBER[ticker]
-    cyclotron_information.df_zero = pd.DataFrame(columns=["Time","PLOT_1","PLOT_2","PLOT_3"])
-    cyclotron_information.df_zero["PLOT_1"] = 0
-    cyclotron_information.df_zero["PLOT_2"] = 0
-    cyclotron_information.df_zero["PLOT_3"] = 0    
+
+
+def fig_setting(row_number,cyclotron_information,ticker):
     fig_logfile = go.FigureWidget(make_subplots(rows=len(COLUMNS_TO_PLOT[ticker]), cols=1,shared_xaxes=False,
                 vertical_spacing=0.1))
     fig_logfile.update_xaxes(title_text="Time [HH:MM:SS]", row=row_number, col=1)  
@@ -95,23 +92,11 @@ def daily_report(ticker,ticker_layer,tabs,input_file,cyclotron_information):
     fig_logfile.update_yaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
     fig_logfile.update_layout(paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='#FFFFFF',font=dict(size=16,color="black"),font_family="Arial",margin=dict(t=35))  
-    for i in range(len(COLUMNS_TO_PLOT[ticker])):
-      for j in range(len(COLUMNS_TO_PLOT[ticker][i])):
-        dataframe_to_plot = getattr(cyclotron_information,DATAFRAME_TO_PLOT[ticker][i][j])
-        if DATAFRAME_TO_PLOT[ticker][i][j] == "df_isochronism":
-           dataframe_to_plot = dataframe_to_plot.iloc[:-1]
-           fig_logfile.add_vline(x=cyclotron_information.df_isochronism.Magnet_I.iloc[-1],line_width=4, line_dash="dot",line_color="green",annotation_text="Isochronism"
-            ,row=2, col=1)
-           fig_logfile.update_xaxes(title_text="Time [HH:MM:SS]", row=1, col=1)
-           fig_logfile.update_xaxes(title_text="Current [A]", row=2, col=1)
-        values_to_plot = getattr(dataframe_to_plot,COLUMNS_TO_PLOT[ticker][i][j]).astype(float)
-        horizontal_values = getattr(dataframe_to_plot,HORIZONTAL_VALUES[ticker][i][j])
-        values = [horizontal_values,values_to_plot,Y_LABEL[ticker][i][j]]
-        settings = [i+1,1,COLORS[j],LEGEND[ticker][i][j],10]
-        fig_logfile = additional_functions.plotting_simple_no_error(fig_logfile,values,settings)
+    return fig_logfile
+
+def adding_reference(ticker_layer,i,j):
     reference_value = REFERENCE_VALUE_DICTIONARY[ticker] 
-    if ticker_layer == ["ADRF"]:
-       for i in range(len(reference_value)):
+    for i in range(len(reference_value)):
             for j in range(len(reference_value[i])):
                 if len(reference_value[i][j]) > 0:
                     fig_logfile.add_hrect(y0=reference_value[i][j][1], y1=reference_value[i][j][2], line_width=0, fillcolor="red", opacity=0.05,row=i+1, col=1)
@@ -120,5 +105,35 @@ def daily_report(ticker,ticker_layer,tabs,input_file,cyclotron_information):
                          annotation_position="bottom right",row=i+1, col=1)
                     fig_logfile.add_hline(y=reference_value[i][j][0], line_dash="dot",line_color="orange",annotation_text="Medium risk area",
                          annotation_position="bottom right",row=i+1, col=1)
+    return fig_logfile
+
+
+def get_values_and_settings(dataframe_to_plot,ticker,i,j):
+    values_to_plot = getattr(dataframe_to_plot,COLUMNS_TO_PLOT[ticker][i][j]).astype(float)
+    horizontal_values = getattr(dataframe_to_plot,HORIZONTAL_VALUES[ticker][i][j])
+    values = [horizontal_values,values_to_plot,Y_LABEL[ticker][i][j]]
+    settings = [i+1,1,COLORS[j],LEGEND[ticker][i][j],10]
+    return (values,settings)
+
+def daily_report(tickers,tabs,input_file,cyclotron_information):     
+    row_number = ROW_NUMBER[tickers[0]]
+    cyclotron_information.df_zero = pd.DataFrame(columns=["Time","PLOT_1","PLOT_2","PLOT_3"])
+    cyclotron_information.df_zero["PLOT_1"] = 0
+    cyclotron_information.df_zero["PLOT_2"] = 0
+    cyclotron_information.df_zero["PLOT_3"] = 0    
+    fig_logfile = fig_setting(row_number,cyclotron_information,tickers[0])
+    for i in range(len(COLUMNS_TO_PLOT[tickers[0]])):
+      for j in range(len(COLUMNS_TO_PLOT[tickers[0]][i])):
+        dataframe_to_plot = getattr(cyclotron_information,DATAFRAME_TO_PLOT[tickers[0]][i][j])
+        if DATAFRAME_TO_PLOT[tickers[0]][i][j] == "df_isochronism":
+           dataframe_to_plot = dataframe_to_plot.iloc[:-1]
+           fig_logfile.add_vline(x=cyclotron_information.df_isochronism.Magnet_I.iloc[-1],line_width=4, line_dash="dot",line_color="green",annotation_text="Isochronism"
+            ,row=2, col=1)
+           fig_logfile.update_xaxes(title_text="Time [HH:MM:SS]", row=1, col=1)
+           fig_logfile.update_xaxes(title_text="Current [A]", row=2, col=1)
+        values,settings = get_values_and_settings(dataframe_to_plot,tickers[0],i,j)
+        fig_logfile = additional_functions.plotting_simple_no_error(fig_logfile,values,settings)
+    if tickers[1] == ["ADRF"]:
+        fig_logfile = adding_reference(ticker_layer,i,j)
     return (fig_logfile)
    
