@@ -10,6 +10,7 @@ import additional_functions
 import columns_names
 from scipy.optimize import curve_fit
 import getting_subsystems_data_alt 
+import columns_names
 COLUMNS_SOURCE = ["CURRENT_AVE"]
 COLUMNS_VACUUM = ["PRESSURE_AVE"]
 COLORS = ["#223A38","#2E8F88"],["#029386","#069AF3"],["#054907","#15B01A"]
@@ -61,7 +62,14 @@ class cyclotron:
         self.source_performance = 0
         self.target_min = 0
         self.target_max = 0
-        self.values_targets = [self.target_min,self.target_max]    
+        self.values_targets = [self.target_min,self.target_max]   
+        self.df_summary_source = pd.DataFrame(columns=[columns_names.COLUMNS_SOURCE])
+        self.df_summary_vacuum = pd.DataFrame(columns=[columns_names.COLUMNS_VACUUM])
+        self.df_summary_beam = pd.DataFrame(columns=[columns_names.COLUMNS_BEAM])
+        self.df_summary_transmission = pd.DataFrame(columns=[columns_names.COLUMNS_TRANSMISSION])
+        self.df_extraction_target = pd.DataFrame(columns=[columns_names.COLUMNS_EXTRACTION])
+        self.df_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE","SOURCE_PERFORMANCE_ERROR","TRANSMISSION"])
+        self.volume_information  = pd.DataFrame(columns=[columns_names.COLUMNS_VOLUME])
         #INIT DATAFRAMES
         columns_names.initial_df(self)
         self.df_summary = pd.DataFrame([[0]*len(COLUMNS_TOTAL)],columns=[COLUMNS_TOTAL])
@@ -168,7 +176,10 @@ class cyclotron:
             self.df_summary[COLUMNS_FOIL_CHARGE_1[i]] = df_target_1.CURRENT_FOIL[df_target_1.FOIL == str(i+1)].sum()       
         for i in range(len(COLUMNS_FOIL_CHARGE_2)):
             self.df_summary[COLUMNS_FOIL_CHARGE_2[i]] = df_target_2.CURRENT_FOIL[df_target_2.FOIL == str(i+1)].sum() 
-
+    
+    def getting_sub_dataframe(self,data,target):
+        filtered_data = data[data.TARGET.astype(float) == float(target)]
+        return (filtered_data)
 
     def plotting_statistics(self,ticker,ticker_horizontal,ticker_layer):  
         k = - 1
@@ -190,33 +201,22 @@ class cyclotron:
             fig = make_subplots(rows=4, cols=1,shared_xaxes=True,
                     vertical_spacing=0.02)
         for target in self.values_targets:
-            self.df_summary_source = self.df_source[self.df_source.TARGET.astype(float) == float(target)]
-            x_values = getattr(self.df_summary_source,ticker_horizontal)
-            self.df_summary_vacuum = self.df_vacuum[self.df_vacuum.TARGET.astype(float) == float(target)]
-            self.df_summary_beam = self.df_beam[self.df_beam.TARGET.astype(float) == float(target)]
-            #(df_summary_beam["COLL_CURRENT_L_AVE"].astype(float)+df_summary_beam["COLL_CURRENT_R_AVE"].astype(float))/(df_summary_beam['FOIL_CURRENT_AVE'].astype(float))*100
-            self.df_summary_rf = self.df_rf[self.df_rf.TARGET.astype(float) == float(target)]
+            self.df_summary_source = self.getting_sub_dataframe(self.df_source,target)
+            self.df_summary_vacuum = self.getting_sub_dataframe(self.df_vacuum,target)
+            self.df_summary_beam = self.getting_sub_dataframe(self.df_beam,target)
+            self.df_summary_transmission = self.getting_sub_dataframe(self.df_transmission,target)
+            self.df_extraction_target = self.getting_sub_dataframe(self.df_extraction,target)
+            self.df_source_performance = self.getting_sub_dataframe(self.ion_source_performance,target)
+            self.volume_information = self.getting_sub_dataframe(self.df_volume,target)
             self.df_summary_magnet = self.df_magnet[self.df_magnet.TARGET.astype(float) == float(target)]
-            self.df_summary_transmission = self.df_transmission[self.df_transmission.TARGET.astype(float) == float(target)]
-            self.df_extraction_target = self.df_extraction[self.df_extraction.TARGET.astype(float) == float(target)]
-            print ("SOURCE PERFORMANCE")
-            self.df_source_performance = self.ion_source_performance[self.ion_source_performance.TARGET.astype(float) == float(target)]
-            self.volume_information = self.df_filling_volume[self.df_volume.TARGET.astype(float) == float(target)]
+            x_values = getattr(self.df_summary_source,ticker_horizontal) 
             self.df_summary_source["HFLOW_STD"] = [0]*len(self.df_summary_source["HFLOW"])
             k += 1  
-            print ("DF SUMMARY RF")
-            print (getattr(self,columns_names.DATAFRAME_TO_PLOT["RF_STABILITY"][0][0]))
             for i in range(len(columns_names.COLUMNS_TO_PLOT[ticker])): 
                 for j in range(len(columns_names.COLUMNS_TO_PLOT[ticker][i])):
                     dataframe_to_plot = getattr(self,columns_names.DATAFRAME_TO_PLOT[ticker][i][j])
-                    print ("DATAFRAME TO PLOT")
-                    print (dataframe_to_plot)
                     y_values = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j])
-                    print ("COLUMNS")
-                    print (y_values)
                     y_values_error = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT_ERROR[ticker][i][j])
-                    print ("COLUMNS_ERROR")
-                    print (y_values_error)
                     units = columns_names.Y_LABEL[ticker][i][j]
                     legend = columns_names.LEGEND[ticker][i][j]
                     reference_value = columns_names.REFERENCE_VALUE_DICTIONARY[ticker][i]
