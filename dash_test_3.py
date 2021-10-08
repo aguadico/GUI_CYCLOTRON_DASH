@@ -28,7 +28,7 @@ import io
 from datetime import date
 import managing_files_alt
 import computing_charge_df_alt
-import ion_source_studies
+#import ion_source_studies
 import additional_functions
 import cyclotron_class
 import app_layout
@@ -78,7 +78,8 @@ TEXT_TO_PLOT = {"FOILS_1":["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [
     Input('upload_data_file', 'filename'),
     )
 def daily_report(ticker,ticker_layer,tabs,input_file): 
-    fig_logfile = plotting_logs.daily_report(ticker,ticker_layer,tabs,input_file,cyclotron_information)
+    tickers = [ticker,ticker_layer]
+    fig_logfile = plotting_logs.daily_report(tickers,tabs,input_file,cyclotron_information)
     return (fig_logfile)
    
 

@@ -94,17 +94,24 @@ def fig_setting(row_number,cyclotron_information,ticker):
             plot_bgcolor='#FFFFFF',font=dict(size=16,color="black"),font_family="Arial",margin=dict(t=35))  
     return fig_logfile
 
-def adding_reference(ticker_layer,i,j):
+def adding_reference(fig_logfile,ticker,i,j):
+    print ("TICKER")
+    print (ticker)
+    print (REFERENCE_VALUE_DICTIONARY[ticker] )
     reference_value = REFERENCE_VALUE_DICTIONARY[ticker] 
+    colors = ["orange","red"]
+    text = ["Medium risk area","High risk area"]
     for i in range(len(reference_value)):
             for j in range(len(reference_value[i])):
                 if len(reference_value[i][j]) > 0:
-                    fig_logfile.add_hrect(y0=reference_value[i][j][1], y1=reference_value[i][j][2], line_width=0, fillcolor="red", opacity=0.05,row=i+1, col=1)
-                    fig_logfile.add_hrect(y0=reference_value[i][j][0], y1=reference_value[i][j][1], line_width=0, fillcolor="orange", opacity=0.05,row=i+1, col=1)
-                    fig_logfile.add_hline(y=reference_value[i][j][1], line_dash="dot",line_color="red",annotation_text="High risk area",
+                    for k in range(2):
+                        fig_logfile.add_hrect(y0=reference_value[i][j][k], y1=reference_value[i][j][k+1], line_width=0, fillcolor=colors[k], opacity=0.05,row=i+1, col=1)
+                        fig_logfile.add_hline(y=reference_value[i][j][k], line_dash="dot",line_color=colors[k],annotation_text=text[k],
                          annotation_position="bottom right",row=i+1, col=1)
-                    fig_logfile.add_hline(y=reference_value[i][j][0], line_dash="dot",line_color="orange",annotation_text="Medium risk area",
-                         annotation_position="bottom right",row=i+1, col=1)
+                    #fig_logfile.add_hrect(y0=reference_value[i][j][1], y1=reference_value[i][j][2], line_width=0, fillcolor="red", opacity=0.05,row=i+1, col=1)
+                    #fig_logfile.add_hrect(y0=reference_value[i][j][0], y1=reference_value[i][j][1], line_width=0, fillcolor="orange", opacity=0.05,row=i+1, col=1)
+                    #fig_logfile.add_hline(y=reference_value[i][j][0], line_dash="dot",line_color="orange",annotation_text="Medium risk area",
+                    #     annotation_position="bottom right",row=i+1, col=1)
     return fig_logfile
 
 
@@ -115,12 +122,15 @@ def get_values_and_settings(dataframe_to_plot,ticker,i,j):
     settings = [i+1,1,COLORS[j],LEGEND[ticker][i][j],10]
     return (values,settings)
 
-def daily_report(tickers,tabs,input_file,cyclotron_information):     
-    row_number = ROW_NUMBER[tickers[0]]
-    cyclotron_information.df_zero = pd.DataFrame(columns=["Time","PLOT_1","PLOT_2","PLOT_3"])
+def initializing_df(cyclotron_information):
     cyclotron_information.df_zero["PLOT_1"] = 0
     cyclotron_information.df_zero["PLOT_2"] = 0
     cyclotron_information.df_zero["PLOT_3"] = 0    
+
+def daily_report(tickers,tabs,input_file,cyclotron_information):     
+    row_number = ROW_NUMBER[tickers[0]]
+    cyclotron_information.df_zero = pd.DataFrame(columns=["Time","PLOT_1","PLOT_2","PLOT_3"])
+    initializing_df(cyclotron_information)
     fig_logfile = fig_setting(row_number,cyclotron_information,tickers[0])
     for i in range(len(COLUMNS_TO_PLOT[tickers[0]])):
       for j in range(len(COLUMNS_TO_PLOT[tickers[0]][i])):
@@ -134,6 +144,6 @@ def daily_report(tickers,tabs,input_file,cyclotron_information):
         values,settings = get_values_and_settings(dataframe_to_plot,tickers[0],i,j)
         fig_logfile = additional_functions.plotting_simple_no_error(fig_logfile,values,settings)
     if tickers[1] == ["ADRF"]:
-        fig_logfile = adding_reference(ticker_layer,i,j)
+        fig_logfile = adding_reference(fig_logfile,tickers[0],i,j)
     return (fig_logfile)
    

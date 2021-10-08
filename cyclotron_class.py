@@ -66,6 +66,7 @@ class cyclotron:
         self.df_summary_source = pd.DataFrame(columns=[columns_names.COLUMNS_SOURCE])
         self.df_summary_vacuum = pd.DataFrame(columns=[columns_names.COLUMNS_VACUUM])
         self.df_summary_beam = pd.DataFrame(columns=[columns_names.COLUMNS_BEAM])
+        self.df_summary_rf = pd.DataFrame(columns=[columns_names.COLUMNS_RF])
         self.df_summary_transmission = pd.DataFrame(columns=[columns_names.COLUMNS_TRANSMISSION])
         self.df_extraction_target = pd.DataFrame(columns=[columns_names.COLUMNS_EXTRACTION])
         self.df_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE","SOURCE_PERFORMANCE_ERROR","TRANSMISSION"])
@@ -176,8 +177,8 @@ class cyclotron:
         self.df_summary["CUMULATIVE_CURRENT_COLL_R_1"] = df_target_1.CURRENT_COLL_R.sum()
         self.df_summary["CUMULATIVE_CURRENT_COLL_R_2"] = df_target_2.CURRENT_COLL_R.sum()
         self.df_summary["CUMULATIVE_SOURCE"] = (df_target_1.CURRENT_SOURCE.sum() + df_target_2.CURRENT_SOURCE.sum())/1000 
-        self.__selecting_target_data(df_target_1,COLUMNS_FOIL_CHARGE_1)
-        self.__selecting_target_data(df_target_2,COLUMNS_FOIL_CHARGE_2)
+        #self.__selecting_target_data(df_target_1,COLUMNS_FOIL_CHARGE_1)
+        #self.__selecting_target_data(df_target_2,COLUMNS_FOIL_CHARGE_2)
         
 
     def __selecting_target_data(self,df_target,columns):
@@ -211,6 +212,8 @@ class cyclotron:
             self.df_summary_source = self.getting_sub_dataframe(self.df_source,target)
             self.df_summary_vacuum = self.getting_sub_dataframe(self.df_vacuum,target)
             self.df_summary_beam = self.getting_sub_dataframe(self.df_beam,target)
+            self.df_summary_rf = self.getting_sub_dataframe(self.df_rf,target)
+            #self.df_summary_rf = self.getting_sub_dataframe(self.df,target)
             self.df_summary_transmission = self.getting_sub_dataframe(self.df_transmission,target)
             self.df_extraction_target = self.getting_sub_dataframe(self.df_extraction,target)
             self.df_source_performance = self.getting_sub_dataframe(self.ion_source_performance,target)

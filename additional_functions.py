@@ -5,13 +5,14 @@ import io
 import saving_trends_alt
 import managing_files_alt
 import computing_charge_df_alt
-import ion_source_studies
+#simport ion_source_studies
 import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import cyclotron_class
 import tfs
 import getting_subsystems_data_alt
+
 
 RANGE_VALUES_CHARGE = {"TARGET_COLLIMATORS":[[[0,10],[10,12.5],[12.5,15]],[[0,300],[300,500],[500,700]],[[0,300],[300,500],[500,700]]],
 "FOILS": [[[0,2000],[2000,2500],[2500,3000]]] * 6,
