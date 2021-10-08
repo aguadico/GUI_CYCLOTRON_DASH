@@ -13,6 +13,28 @@ def get_summary_ion_source(self):
     ave_source_voltage,std_source_voltage,max_source_voltage,min_source_voltage = getting_subsystems_data_alt.get_statistic_values(source_voltage)  
     ave_gas_flow,std_gas_flow,max_gas_flow,min_gas_flow = getting_subsystems_data_alt.get_statistic_values(gas_flow) 
     ave_ratio_current,std_ratio_current,max_ratio_current,min_ratio_current = getting_subsystems_data_alt.get_statistic_values(ratio_current)
+    print ("FILES")
+    print (ave_source_current)
+    print (int(self.file_number))
+    #if self.file_number.isnumeric() == False: 
+    #    self.file_number = "1"
+    print (self.date_stamp)
+    print (self.target_number)
+    print (foil_number)
+    print (float(max_source_current))
+    print (float(min_source_current))
+    print (float(ave_source_current))
+    print (float(std_source_current))
+    print (float(max_source_voltage))
+    print (float(min_source_voltage)) 
+    print (float(ave_source_voltage))
+    print (float(std_source_voltage))
+    print (float(max_gas_flow))
+    print (float(max_ratio_current))
+    print (float(min_ratio_current))
+    print (float(ave_ratio_current))
+    print (float(std_ratio_current))
+    print (float(std_source_current)/float(ave_source_current)*100)
     df_source_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,
     float(max_source_current),float(min_source_current),float(ave_source_current),float(std_source_current),
     float(max_source_voltage),float(min_source_voltage),float(ave_source_voltage),float(std_source_voltage),
@@ -104,7 +126,7 @@ def get_summary_rf(self):
     max_flap2_pos,min_flap2_pos,ave_flap2_pos,std_flap2_pos,
     self.sparks_number,self.distance_flap_1,self.average_instant_speed_1,self.max_instant_speed_1,self.std_instant_speed_1,
     self.distance_flap_2,self.average_instant_speed_2,self.max_instant_speed_2,self.std_instant_speed_2,
-    ave_reflected_power*100,std_reflected_power*100,std_dee1_voltage/ave_dee1_voltage*100,std_dee2_voltage/ave_dee2_voltage*100,0,0,
+    ave_reflected_power*1000,std_reflected_power*1000,std_dee1_voltage/ave_dee1_voltage*1000,std_dee2_voltage/ave_dee2_voltage*1000,0,0,
     0,0,0,0,0,0,0]]
     df_rf_i = pd.DataFrame((rf_values),columns=columns_names.COLUMNS_RF)      
     self.df_rf = self.df_rf.append(df_rf_i,ignore_index=True)
@@ -176,7 +198,16 @@ def get_filling_volume(self,va):
     #pressure_final = self.df_subsystem_pressure.Target_P.astype(float)[np.min(self.df_subsystem_pressure.Target_P[self.df_subsystem_pressure.Target_P.astype(float) > 400].index)]
     pressure_no_current = self.file_df.Target_P.astype(float)[(self.file_df.Target_I.astype(float) < 1)]
     high_pressure = pressure_no_current[pressure_no_current > 400][3:-3]
-    low_pressure = pressure_no_current[3:np.min(high_pressure.index)][pressure_no_current < 70]
+    print ("PRESSURE")
+    print (pressure_no_current)
+    print (pressure_no_current < 70)
+    print (high_pressure)
+    print (np.min(high_pressure.index))
+    if np.isnan(np.min(high_pressure.index)) == True:
+        print ("HEREEEE!")
+        low_pressure = 0
+    else:
+        low_pressure = pressure_no_current[3:np.min(high_pressure.index)][pressure_no_current < 70]
     high_pressure_ave = np.average(high_pressure)
     high_pressure_std = np.std(high_pressure)
     low_pressure_ave = np.average(low_pressure)

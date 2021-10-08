@@ -24,58 +24,58 @@ va = 0
 COLORS = ['#1E90FF','#FF4500','#32CD32',"#6A5ACD","#20B2AA","#00008B","#A52A2A","#228B22"]
 
 
-def get_data_tuple(path_file):
-    all_parts = []
-    logfile = open(path_file,"r")
-    for line in logfile:
-         parts = line.split()
-         all_parts.append(
-            parts)
-    target_number = (np.array(all_parts[0])[1])
-    date_stamp = (np.array(all_parts[0])[8])
-    site_name = (np.array(all_parts[1])[2])
-    if len(np.array(all_parts[0])) == 10: 
-        date_stamp = (np.array(all_parts[0])[8] + "0" + np.array(all_parts[0])[9] )
-    real_values = all_parts[4:]
-    return real_values,target_number,date_stamp,site_name
+#def get_data_tuple(path_file):
+#    all_parts = []
+#    logfile = open(path_file,"r")
+#    for line in logfile:
+#         parts = line.split()
+#         all_parts.append(
+#            parts)
+#    target_number = (np.array(all_parts[0])[1])
+#    date_stamp = (np.array(all_parts[0])[8])
+#    site_name = (np.array(all_parts[1])[2])
+#    if len(np.array(all_parts[0])) == 10: 
+#        date_stamp = (np.array(all_parts[0])[8] + "0" + np.array(all_parts[0])[9] )
+#    real_values = all_parts[4:]
+#    return real_values,target_number,date_stamp,site_name
 
-def get_logfile_lines(path_file):
-    lines = []
-    logfile = open(path_file,"r")
-    for line in logfile:
-         parts = line.split()
-         lines.append(
-            parts)
-    return lines
+#def get_logfile_lines(path_file):
+#    lines = []
+#    logfile = open(path_file,"r")
+#    for line in logfile:
+#         parts = line.split()
+#         lines.append(
+#            parts)
+#    return lines
 
-def get_headers(path_file):
-    headers_lines = get_logfile_lines(path_file)
-    target_number = (np.array(headers_lines[0])[1])
-    date_stamp = (np.array(headers_lines[0])[8])
-    site_name = (np.array(headers_lines[1])[2])
-    file_number = (np.array(headers_lines[0])[6])
-    if len(np.array(headers_lines[0])) == 10: 
-        date_stamp = (np.array(headers_lines[0])[8] + "0" + np.array(headers_lines[0])[9] )
-    return target_number,date_stamp,site_name,file_number
+#def get_headers(path_file):
+#    headers_lines = get_logfile_lines(path_file)
+#    target_number = (np.array(headers_lines[0])[1])
+#    date_stamp = (np.array(headers_lines[0])[8])
+#    site_name = (np.array(headers_lines[1])[2])
+#    file_number = (np.array(headers_lines[0])[6])
+#    if len(np.array(headers_lines[0])) == 10: 
+#        date_stamp = (np.array(headers_lines[0])[8] + "0" + np.array(headers_lines[0])[9] )
+#    return target_number,date_stamp,site_name,file_number
 
-def get_irradiation_information(path_file):
-    irradiation_information = get_logfile_lines(path_file)    
-    irradiation_information = irradiation_information[4:]
-    return irradiation_information  
+#def get_irradiation_information(path_file):
+#    irradiation_information = get_logfile_lines(path_file)    
+#    irradiation_information = irradiation_information[4:]
+#    return irradiation_information  
 
-def get_data(real_values):
-    data_df = pd.DataFrame.from_records(real_values)
-    column_names = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV","Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I","Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V","Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos","Extr_pos","Balance","RF_fwd_W","RF_refl_W","Foil_No"]
-    column_names_nf = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV","Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I","Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V","Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos","Extr_pos","Balance","RF_fwd_W","RF_refl_W"]
-    try:
-       data_df = data_df.drop([0,1,2], axis=0)
-    except:
-       data_df = data_df.drop([0],axis=0)
-    try: 
-       data_df.columns = column_names
-    except:
-       data_df.columns = column_names_nf 
-    return data_df
+#def get_data(real_values):
+#    data_df = pd.DataFrame.from_records(real_values)
+#    column_names = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV","Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I","Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V","Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos","Extr_pos","Balance","RF_fwd_W","RF_refl_W","Foil_No"]
+#    column_names_nf = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV","Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I","Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V","Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos","Extr_pos","Balance","RF_fwd_W","RF_refl_W"]
+#    try:
+#       data_df = data_df.drop([0,1,2], axis=0)
+#    except:
+#       data_df = data_df.drop([0],axis=0)
+#    try: 
+#       data_df.columns = column_names
+#    except:
+#       data_df.columns = column_names_nf 
+#    return data_df
 
 def get_time(excel_data_df,current):
     time = excel_data_df.Time[excel_data_df['Target_I'].astype(float) > float(current)]

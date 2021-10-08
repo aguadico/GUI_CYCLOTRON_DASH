@@ -50,7 +50,7 @@ def file_open(self):
         # distance to find resonance
         print ("RESONANCE")
         self.initial_flap_1,self.resonance_flap_1,self.distance_flap_1 = get_resonance_speed(self,"Flap1_pos","Dee_1_kV")
-        self.initial_flap_2,self.resonance_flap_2,self.distance_flap_2 = get_resonance_speed(self,"Flap1_pos","Dee_1_kV")
+        self.initial_flap_2,self.resonance_flap_2,self.distance_flap_2 = get_resonance_speed(self,"Flap2_pos","Dee_2_kV")
         # 
         self.average_instant_speed_1, self.max_instant_speed_1, self.std_instant_speed_1 = get_instant_and_average_speed(self,"Flap1_pos")
         self.average_instant_speed_2, self.max_instant_speed_2, self.std_instant_speed_2 = get_instant_and_average_speed(self,"Flap2_pos")

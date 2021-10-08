@@ -31,7 +31,7 @@ import computing_charge_df_alt
 import ion_source_studies
 import additional_functions
 import cyclotron_class
-import app_layout_1
+import app_layout
 import getting_subsystems_data_alt
 import time
 import plotting_logs
@@ -51,7 +51,7 @@ app = JupyterDash(external_stylesheets=[dbc.themes.SLATE])
 app.title = "Cyclotron Analytics"
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app.layout = app_layout_1.layout
+app.layout = app_layout.layout
 
 
 COLUMNS_TO_PLOT = {"FOILS_1":["CUMULATIVE_TARGET_1_FOIL_1","CUMULATIVE_TARGET_1_FOIL_2","CUMULATIVE_TARGET_1_FOIL_3","CUMULATIVE_TARGET_1_FOIL_4","CUMULATIVE_TARGET_1_FOIL_5","CUMULATIVE_TARGET_1_FOIL_6"],
@@ -99,18 +99,6 @@ def display_time_series(ticker,ticker_horizontal,ticker_layer,list_of_contents,t
     return fig
 
 
-#@app.callback(
-#    Output("time-series-chart4", "figure"), 
-#    Input('loading_output_1', 'children'), 
-#    )
-#def display_total_charge(loading): 
-#    text_to_plot = ["Source [Ah]","Target Position " + str(cyclotron_information.physical_targets[0]) +  " [mAh]","Target Position "+ str(cyclotron_information.physical_targets[1]) + " [mAh]"]
-#    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_SOURCE"].astype(float))[0],np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1"].astype(float))[0],
-#    np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2"].astype(float))[0]]    
-#    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot," ","SOURCE_TARGETS")
-#    return fig_status
-
-
 @app.callback(
     Output("time-series-chart4", "figure"),
     Output("target_collimators_1", "figure"),
@@ -131,21 +119,6 @@ def display_foils_2_4_5_6(loading,tabs):
         figs.append(plotting_bars(dict_value,limit,fig_size_i,title))
     return figs[0],figs[1],figs[2],figs[3],figs[4]
 
-#@app.callback(
-#    Output("target_collimators_1", "figure"),
-#    Output("target_collimators_2", "figure"),
-#    Input('loading_output_1', 'children')
-#        )
-#def display_target_collimators_1(fig): 
-#    dict_key_1 = "TARGET_COLLIMATORS_1"
-#    dict_key_2 = "TARGET_COLLIMATORS_2"
-#    limits = "TARGET_COLLIMATORS"
-#    fig_size = 800
-#    fig_status_1 = plotting_bars(dict_key_1,limits,fig_size)
-#    fig_status_2 = plotting_bars(dict_key_2,limits,fig_size)
-#    print ("INFORMATION")
-#    print (cyclotron_information.df_summary)
-#    return fig_status_1,fig_status_2
 
 def plotting_bars(element,limits,fig_size,title):
     text_to_plot = TEXT_TO_PLOT[element]
@@ -160,23 +133,6 @@ def plotting_bars(element,limits,fig_size,title):
     #font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=60)) 
     return fig_status
 
-
-    #text_to_plot = ["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"]
-    #values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_1"].astype(float)/1000)[0],np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_R_1"].astype(float))[0],
-    #np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_L_1"].astype(float))[0]]   
-    #fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Position " + str(cyclotron_information.physical_targets[0]) ,"charge_collimators_target")
-    #return fig_status
-
-#@app.callback(
-#    Output("target_collimators_2", "figure"),
-#    Input('loading_output_1', 'children'), 
-#    )
-#def display_target_collimators_2(fig): 
-#    text_to_plot = ["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"]
-#    values_to_plot = [np.array(cyclotron_information.df_summary["CUMULATIVE_TARGET_2"].astype(float)/1000)[0],np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_R_2"].astype(float))[0],
-#    np.array(cyclotron_information.df_summary["CUMULATIVE_CURRENT_COLL_L_2"].astype(float))[0]]
-#    fig_status = additional_functions.plotting_charge(cyclotron_information,text_to_plot,values_to_plot,"Position " + str(cyclotron_information.physical_targets[1]),"charge_collimators_target")
-#    return fig_status
 
 
 @app.callback(Output('loading_output_1', 'children'),

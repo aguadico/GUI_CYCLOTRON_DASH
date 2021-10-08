@@ -31,7 +31,7 @@ import computing_charge_df_alt
 import ion_source_studies
 import additional_functions
 import cyclotron_class
-import app_layout_1
+import app_layout
 import getting_subsystems_data_alt
 import time
 

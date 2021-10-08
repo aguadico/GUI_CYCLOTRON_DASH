@@ -163,12 +163,19 @@ def parse_contents(cyclotron_information,contents, filename, date):
     cyclotron_information.file_df["Vacuum_mbar"] = cyclotron_information.file_df.Vacuum_P.astype(float)*1e5
     cyclotron_information.df_isochronism = getting_subsystems_data_alt.get_isochronism(cyclotron_information.file_df)
     cyclotron_information.target_number = (df.columns[0][9:10])
-    # el file_number esta dentro
-    cyclotron_information.file_number = (df.columns[0][35:40])
+    cyclotron_information.file_number = (df.columns[0]).split()[6]
     # TODO: dar formato a la fecha
-    year = str(df.columns[0][49:53])
-    month = str(df.columns[0][54:56])
-    day = int(df.columns[0][57:60])
+    print ("HEREEEE DATE")
+    print ((df.columns[0]).split()) 
+    try: 
+      day = int((df.columns[0]).split()[-1][8:10])
+      year = str((df.columns[0]).split()[-1][0:4])
+      month = str((df.columns[0]).split()[-1][5:7])
+    except: 
+      day = int((df.columns[0]).split()[-1])
+      year = str((df.columns[0]).split()[-2][0:4])
+      month = str((df.columns[0]).split()[-2][5:7])
+
     #cyclotron.target_number = 0
     if day < 10:
         day = "0" + str(day)

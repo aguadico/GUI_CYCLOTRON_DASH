@@ -8,7 +8,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import additional_functions
 import columns_names
-
+from scipy.optimize import curve_fit
+import getting_subsystems_data_alt 
 COLUMNS_SOURCE = ["CURRENT_AVE"]
 COLUMNS_VACUUM = ["PRESSURE_AVE"]
 COLORS = ["#223A38","#2E8F88"],["#029386","#069AF3"],["#054907","#15B01A"]
@@ -64,13 +65,83 @@ class cyclotron:
         #INIT DATAFRAMES
         columns_names.initial_df(self)
         self.df_summary = pd.DataFrame([[0]*len(COLUMNS_TOTAL)],columns=[COLUMNS_TOTAL])
-        self.ion_source_performance = pd.DataFrame(columns=["TARGET","SOURCE_PERFORMANCE","SOURCE_PERFORMANCE_ERROR"])
+        self.ion_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE","SOURCE_PERFORMANCE_ERROR","TRANSMISSION"])
         
+    def current(self,X, a):
+         x,y = X
+         return a*(x+y) 
+    def current_vaccum(X, a,b):
+         x,y,z = X
+         return a*(x+y) + b*z
+
+    def returning_current(self,funct_fit):    
+        data_df = self.file_df
+        #VARIABLE TO FIT
+        y_value_to_fit = data_df.Arc_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
+        #INDEPENDET VARIABLES (VACUUM, TARGET CURRENT AND COLLIMATORS )
+        x_value_target = data_df.Target_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
+        x_value_vacuum = (data_df.Vacuum_P[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float))
+        x_value_collimators = data_df.Coll_l_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float) + data_df.Coll_r_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
+        x_value_foil = data_df.Foil_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
+        df_summary = pd.DataFrame(list(zip(y_value_to_fit.astype(float),x_value_target.astype(float),x_value_collimators.astype(float),x_value_vacuum.astype(float),x_value_foil.astype(float))),columns=["I_SOURCE","I_TARGET","I_COLLIMATOR","VACUUM","I_FOIL"])
+        # DATAFRAME WITH THE INDEPENDENT VARIABLES
+        X = pd.DataFrame(np.c_[df_summary['I_TARGET'].astype(float), df_summary['I_COLLIMATOR'].astype(float),(df_summary['VACUUM'].astype(float)-np.min(df_summary['VACUUM'].astype(float)))*1e5], columns=['I_TARGET','I_COLLIMATOR','VACUUM'])
+        # DATAFRAME WITH DEPENDENT VARIABLE, IMPORTANT (HERE THE VACUUM IS RELATIVE TO THE MINIMUN VALUE (WITH BEAM))
+        Y = df_summary.I_SOURCE
+        #CREATING A SUBSET FOR TRAINNING AND TESTING (FOR LATTER)
+        # CURVE FIT
+        print ("VALUES")
+        print (X.I_TARGET)
+        print ((np.array(X.I_TARGET),np.array(X.I_COLLIMATOR),np.array(X.VACUUM)))
+        T_1 = 0
+        if len(X.I_TARGET) > 20:
+           print ("FUNC FIT")
+           popt, pcov = curve_fit(funct_fit, (np.array(X.I_TARGET),np.array(X.I_COLLIMATOR)),Y)
+           # COMPUTNG THE REAL VALUES FROM FIT
+           # GET PROBE CURRENT AND ISOCHRONISM TO COMPUTE TRANSMISSION
+           probe_current = getattr(data_df,"Probe_I").astype(float)[(data_df.Probe_I.astype(float) > 14) & (data_df.Probe_I.astype(float) < 16)]
+           df_isochronism = getting_subsystems_data_alt.get_isochronism(data_df)
+           T_1 = np.average(np.max(df_isochronism.Foil_I[:-1].astype(float))/probe_current)
+           sigma_T_1 = np.std(np.max(df_isochronism.Foil_I)/probe_current)
+           # transmission 2 (from foil to target) and its associated error
+           T_2 = np.average((df_summary.I_TARGET + df_summary.I_COLLIMATOR)/df_summary.I_FOIL)
+           sigma_T_2 = np.std((df_summary.I_TARGET + df_summary.I_COLLIMATOR)/df_summary.I_FOIL)
+           # COMPUTE SOURCE PERFORMANCE AND ITS ASSOCIATED ERROR
+           a = popt[0]
+           x = a*T_1*T_2
+           sigma_a = (np.diag(pcov)**0.5)[0]
+           sigma_x = ((T_1*T_2*sigma_a)**2+(a*T_2*sigma_T_1)**2+(a*T_1*sigma_T_2))**0.5
+           print ("x")
+           print (x)
+           print (sigma_x)
+           print ("TRANSMISSION")
+           print (T_1)
+        else: 
+            print ("TOO SHORT")
+            a = 0
+            sigma_a = 0
+            x = 0
+            sigma_x = 0
+        print ("ION SOURCE PERFORMANCE")
+        print (x)
+        print (sigma_x)
+        print ("TRANSMISSION")
+        #print (T_1*T_2)
+        self.ion_source_performance = self.ion_source_performance.append({"FILE":self.file_number,'TARGET':self.target_number,'SOURCE_PERFORMANCE':x,'SOURCE_PERFORMANCE_ERROR':sigma_x,"TRANSMISSION":T_1}, ignore_index=True)
+        #cyclotron_data.ion_source_performance = cyclotron_data.ion_source_performance.append({'SOURCE_PERFORMANCE':x}, ignore_index=True)
+        #cyclotron_data.ion_source_performance = cyclotron_data.ion_source_performance.append({'SOURCE_PERFORMANCE_ERROR':sigma_x}, ignore_index=True)
+        #print (cyclotron_data.ion_source_performance)
+        self.source_performance_total.append(x)
+        self.source_performance_total_error.append(sigma_x)
+        print ("ION SOURCE PERFORMANCE DF")
+        print (self.ion_source_performance)
+
 
     def file_output(self):
         #Computing or just displaying trends
         saving_trends_alt.getting_summary_per_file(self)
-        ion_source_studies.returning_current(self,ion_source_studies.current)
+        #ion_source_studies.returning_current(self,ion_source_studies.current)
+        self.returning_current(self.current)
 
     def get_average_std_summary(self):
         all_dataframes = [self.df_source,self.df_vacuum,self.df_magnet,self.df_beam,self.df_extraction,self.df_transmission,self.df_rf]
@@ -128,15 +199,24 @@ class cyclotron:
             self.df_summary_magnet = self.df_magnet[self.df_magnet.TARGET.astype(float) == float(target)]
             self.df_summary_transmission = self.df_transmission[self.df_transmission.TARGET.astype(float) == float(target)]
             self.df_extraction_target = self.df_extraction[self.df_extraction.TARGET.astype(float) == float(target)]
+            print ("SOURCE PERFORMANCE")
             self.df_source_performance = self.ion_source_performance[self.ion_source_performance.TARGET.astype(float) == float(target)]
             self.volume_information = self.df_filling_volume[self.df_volume.TARGET.astype(float) == float(target)]
             self.df_summary_source["HFLOW_STD"] = [0]*len(self.df_summary_source["HFLOW"])
             k += 1  
+            print ("DF SUMMARY RF")
+            print (getattr(self,columns_names.DATAFRAME_TO_PLOT["RF_STABILITY"][0][0]))
             for i in range(len(columns_names.COLUMNS_TO_PLOT[ticker])): 
                 for j in range(len(columns_names.COLUMNS_TO_PLOT[ticker][i])):
                     dataframe_to_plot = getattr(self,columns_names.DATAFRAME_TO_PLOT[ticker][i][j])
+                    print ("DATAFRAME TO PLOT")
+                    print (dataframe_to_plot)
                     y_values = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j])
+                    print ("COLUMNS")
+                    print (y_values)
                     y_values_error = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT_ERROR[ticker][i][j])
+                    print ("COLUMNS_ERROR")
+                    print (y_values_error)
                     units = columns_names.Y_LABEL[ticker][i][j]
                     legend = columns_names.LEGEND[ticker][i][j]
                     reference_value = columns_names.REFERENCE_VALUE_DICTIONARY[ticker][i]
@@ -159,5 +239,6 @@ class cyclotron:
         elif ticker_horizontal == "FILE":
             fig.update_xaxes(title_text="File", row=len(columns_names.COLUMNS_TO_PLOT[ticker]), col=1)
         return fig
+
 
 

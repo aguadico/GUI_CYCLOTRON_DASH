@@ -23,9 +23,6 @@ def returning_current(cyclotron_data,funct_fit):
 	# GETTING FOIL TO COMPUTE THE TRANSMISSION FROM FOIL TO TARGET 
 	x_value_foil = data_df.Foil_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
 	# GETTING TIME EVOLUTION FOR PLOTTING THE INFORMATION
-	#time = data_df.Time[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))]
-	#time_dt = pd.to_datetime(time, format='%H:%M:%S')
-	# CREATE A DF SUMMARY OF THE PREVIOUS VARIABLES.
 	df_summary = pd.DataFrame(list(zip(y_value_to_fit.astype(float),x_value_target.astype(float),x_value_collimators.astype(float),x_value_vacuum.astype(float),x_value_foil.astype(float))),columns=["I_SOURCE","I_TARGET","I_COLLIMATOR","VACUUM","I_FOIL"])
 	# DATAFRAME WITH THE INDEPENDENT VARIABLES
 	X = pd.DataFrame(np.c_[df_summary['I_TARGET'].astype(float), df_summary['I_COLLIMATOR'].astype(float),(df_summary['VACUUM'].astype(float)-np.min(df_summary['VACUUM'].astype(float)))*1e5], columns=['I_TARGET','I_COLLIMATOR','VACUUM'])
