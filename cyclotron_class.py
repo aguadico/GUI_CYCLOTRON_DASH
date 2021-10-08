@@ -82,16 +82,20 @@ class cyclotron:
          x,y,z = X
          return a*(x+y) + b*z
 
+    def get_horizontal_values(self,data,data_target):
+        data_filtered = data[data_target.astype(float) > 0.7*np.max(data_target.astype(float))].astype(float)
+        return data_filtered
+ 
     def returning_current(self,funct_fit):    
         data_df = self.file_df
         #VARIABLE TO FIT
-        y_value_to_fit = data_df.Arc_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
+        ion_source_current =  self.get_horizontal_values(data_df.Arc_I,data_df.Target_I)
         #INDEPENDET VARIABLES (VACUUM, TARGET CURRENT AND COLLIMATORS )
-        x_value_target = data_df.Target_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
-        x_value_vacuum = (data_df.Vacuum_P[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float))
-        x_value_collimators = data_df.Coll_l_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float) + data_df.Coll_r_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
-        x_value_foil = data_df.Foil_I[data_df.Target_I.astype(float) > 0.7*np.max(data_df.Target_I.astype(float))].astype(float)
-        df_summary = pd.DataFrame(list(zip(y_value_to_fit.astype(float),x_value_target.astype(float),x_value_collimators.astype(float),x_value_vacuum.astype(float),x_value_foil.astype(float))),columns=["I_SOURCE","I_TARGET","I_COLLIMATOR","VACUUM","I_FOIL"])
+        x_value_target = self.get_horizontal_values(data_df.Target_I,data_df.Target_I)
+        x_value_vacuum = self.get_horizontal_values(data_df.Vacuum_P,data_df.Target_I)
+        x_value_collimators = self.get_horizontal_values(data_df.Coll_l_I,data_df.Target_I) + self.get_horizontal_values(data_df.Coll_r_I,data_df.Target_I)
+        x_value_foil = self.get_horizontal_values(data_df.Foil_I,data_df.Target_I)
+        df_summary = pd.DataFrame(list(zip(ion_source_current.astype(float),x_value_target.astype(float),x_value_collimators.astype(float),x_value_vacuum.astype(float),x_value_foil.astype(float))),columns=["I_SOURCE","I_TARGET","I_COLLIMATOR","VACUUM","I_FOIL"])
         # DATAFRAME WITH THE INDEPENDENT VARIABLES
         X = pd.DataFrame(np.c_[df_summary['I_TARGET'].astype(float), df_summary['I_COLLIMATOR'].astype(float),(df_summary['VACUUM'].astype(float)-np.min(df_summary['VACUUM'].astype(float)))*1e5], columns=['I_TARGET','I_COLLIMATOR','VACUUM'])
         # DATAFRAME WITH DEPENDENT VARIABLE, IMPORTANT (HERE THE VACUUM IS RELATIVE TO THE MINIMUN VALUE (WITH BEAM))
