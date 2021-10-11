@@ -20,6 +20,18 @@ RANGE_VALUES_CHARGE = {"TARGET_COLLIMATORS":[[[0,10],[10,12.5],[12.5,15]],[[0,30
 POSITION = {"TARGET_COLLIMATORS":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],"SOURCE_TARGETS":[[0.7, 0.9],[0.4, 0.6],[0.08, 0.25]],
 "FOILS":[[0.8,0.9],[0.64,0.74],[0.48,0.58],[0.32, 0.42],[0.16, 0.26],[0.0, 0.1]]}
 
+
+COLUMN_NAMES = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV",
+    "Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I",
+    "Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V",
+    "Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos",
+    "Extr_pos","Balance","RF_fwd_W","RF_refl_W","Foil_No"]
+COLUMN_NAMES_NF = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV",
+    "Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I",
+    "Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V",
+    "Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos",
+    "Extr_pos","Balance","RF_fwd_W","RF_refl_W","Foil_No"]
+
 def general_status_plot(fig_status,values,range_values,y_position):
     for i in range(len(values[1])):
         fig_status.add_trace(go.Indicator(
@@ -127,47 +139,49 @@ def current(X, a,b):
      return a*(x+y) 
 
 
-def parse_contents(cyclotron_information,contents, filename, date):
-    content_type, content_string = contents.split(',')
-    decoded = base64.b64decode(content_string)
-    df = pd.read_csv(
-                io.StringIO(decoded.decode('utf-8')))
+def getting_lines(df):
     lines = []
     for i in range(len(df)):
         for line in df.loc[i]:
              parts = line.split()
              lines.append(
                 np.array(parts))
-    column_names = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV",
-    "Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I",
-    "Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V",
-    "Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos",
-    "Extr_pos","Balance","RF_fwd_W","RF_refl_W","Foil_No"]
-    column_names_nf = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV",
-    "Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I",
-    "Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V",
-    "Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos",
-    "Extr_pos","Balance","RF_fwd_W","RF_refl_W","Foil_No"]
+    return lines
+
+def getting_values(lines):
     all_values = []
-    for j in range(len(column_names)):
+    for j in range(len(COLUMN_NAMES)):
         values = []
         for i in list(range(2,len(np.array(lines)))):
             values.append(np.array(lines[i][j]))
         all_values.append(values)
+    return all_values
+
+def creating_df(cyclotron_information,all_values):
     cyclotron_information.file_df = pd.DataFrame(list(zip(all_values[0],all_values[1],all_values[2],all_values[3],all_values[4],
         all_values[5],all_values[6],all_values[7],all_values[8],all_values[9],all_values[10],all_values[11],
         all_values[12],all_values[13],all_values[14],all_values[15],all_values[16],all_values[17],all_values[18],
-        all_values[19],all_values[20],all_values[21],all_values[22],all_values[23],all_values[24],all_values[25])),columns=column_names_nf)
+        all_values[19],all_values[20],all_values[21],all_values[22],all_values[23],all_values[24],all_values[25])),columns=COLUMN_NAMES_NF)
     cyclotron_information.file_df["Collimators"] = cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float)
     cyclotron_information.file_df["Losses"] = (1-(cyclotron_information.file_df.Target_I.astype(float)+cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float))/cyclotron_information.file_df.Foil_I.astype(float))*100
     cyclotron_information.file_df["Relative_target"] = cyclotron_information.file_df.Target_I.astype(float)/cyclotron_information.file_df.Foil_I.astype(float)*100
     cyclotron_information.file_df["Vacuum_mbar"] = cyclotron_information.file_df.Vacuum_P.astype(float)*1e5
+
+def filling_cyclotron_information(cyclotron_information,date,df,lines):
+    cyclotron_information.date_stamp = str(date[0]) + "-" + str(date[1]) + "-" + str(date[2])
+    cyclotron_information.name = lines[0][2]
     cyclotron_information.df_isochronism = getting_subsystems_data_alt.get_isochronism(cyclotron_information.file_df)
     cyclotron_information.target_number = (df.columns[0][9:10])
     cyclotron_information.file_number = (df.columns[0]).split()[6]
-    # TODO: dar formato a la fecha
-    print ("HEREEEE DATE")
-    print ((df.columns[0]).split()) 
+
+def parse_contents(cyclotron_information,contents, filename, date):
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    df = pd.read_csv(
+                io.StringIO(decoded.decode('utf-8')))
+    lines = getting_lines(df)
+    all_values = getting_values(lines)
+    creating_df(cyclotron_information,all_values)
     try: 
       day = int((df.columns[0]).split()[-1][8:10])
       year = str((df.columns[0]).split()[-1][0:4])
@@ -176,12 +190,10 @@ def parse_contents(cyclotron_information,contents, filename, date):
       day = int((df.columns[0]).split()[-1])
       year = str((df.columns[0]).split()[-2][0:4])
       month = str((df.columns[0]).split()[-2][5:7])
-
-    #cyclotron.target_number = 0
     if day < 10:
         day = "0" + str(day)
-    cyclotron_information.date_stamp = str(year) + "-" + str(month) + "-" + str(day)
-    cyclotron_information.name = lines[0][2]
-    #cyclotron_information.file_df = dataframe_test
-    #print (cyclotron_information.file_df)
+    date = [year,month,day]
+    filling_cyclotron_information(cyclotron_information,date,df,lines)
+
+
     return cyclotron_information
