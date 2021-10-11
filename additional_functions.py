@@ -62,30 +62,34 @@ def plotting_charge(cyclotron_information,values,settings):
     font=dict(size=16,color="#223A38"),font_family="Arial",margin=dict(t=100)) 
     return fig_status
 
+def updating_figures(fig,values,settings):
+    fig.update_yaxes(title_text=values, row=settings[0], col=settings[1])
+    return fig 
+
+def adding_limits(fig,settings):
+    fill_colors = ["orange","red"]
+    annotation_text = ["Medium risk area","High risk area"]
+    for i in range(len(settings[5])):
+        if len(settings[5][i]) > 0:
+            for j in range(len(fill_colors)):
+                fig.add_hrect(y0=settings[5][i][j], y1=settings[5][i][j+1], line_width=0, fillcolor=fill_colors[j], opacity=0.05,row=settings[0], col=settings[1])
+                fig.add_hline(y=settings[5][i][j], line_dash="dot",line_color=fill_colors[j],annotation_text=annotation_text[j],
+                        annotation_position="bottom right",row=settings[0], col=settings[1])
+
 def plotting_simple_name(fig,values,settings):
     fig.add_trace(go.Scatter(x=values[0], y=values[1],name=settings[4],mode='markers',                                                         
     marker=go.Marker(dict(size=12,color=settings[2],line=dict(width=2,color=settings[3]))),
-        error_y=dict(
-            type='data',
-            symmetric=True,
-            array=values[2]
-            )),row=settings[0], col=settings[1])
-    fill_colors = ["orange","red"]
-    annotation_text = ["Medium risk area","High risk area"]
+        error_y=dict(type='data',symmetric=True,array=values[2])),
+    row=settings[0], col=settings[1])
     if settings[-1] == ["ADRF"]:
-        for i in range(len(settings[5])):
-            if len(settings[5][i]) > 0:
-                for j in range(len(fill_colors)):
-                    fig.add_hrect(y0=settings[5][i][j], y1=settings[5][i][j+1], line_width=0, fillcolor=fill_colors[j], opacity=0.05,row=settings[0], col=settings[1])
-                    fig.add_hline(y=settings[5][i][j], line_dash="dot",line_color=fill_colors[j],annotation_text=annotation_text[j],
-                         annotation_position="bottom right",row=settings[0], col=settings[1])
-    fig.update_yaxes(title_text=values[3],row=settings[0], col=settings[1])
+        fig = adding_limits(fig,settings)
+    fig = updating_figures(fig,values[3],settings)
     return fig
 
 def plotting_simple_no_error(fig,values,settings):
     fig.add_trace(go.Scatter(x=values[0], y=values[1],mode='markers',name=settings[3],                                                        
     marker=go.Marker(dict(size=settings[4],color=settings[2]))),row=settings[0], col=settings[1])
-    fig.update_yaxes(title_text=values[2], row=settings[0], col=settings[1])
+    fig = updating_figures(fig,values[2],settings)
     return fig
 
 def get_summary_target(target_1,target_2):
@@ -113,10 +117,13 @@ def getting_information(cyclotron_information,target_1,target_2,lists):
             else:
                target_2.selecting_data_to_plot_reset(cyclotron_information)
     # COMPUTING SUMMARY PER FILE
-    saving_trends_alt.getting_summary_final(cyclotron_information) 
     df_target_1,df_target_2 = get_summary_target(target_1,target_2)
-    complete_cyclotron_information(cyclotron_information,df_target_1,df_target_2)
+    saving_summaries(cyclotron_information,df_target_1,df_target_2)
 
+def saving_summaries(cyclotron_information,df_target_1,df_target_2):
+    saving_trends_alt.getting_summary_final(cyclotron_information) 
+    complete_cyclotron_information(cyclotron_information,df_target_1,df_target_2)
+    
 
 def getting_lines(df):
     lines = []
@@ -153,11 +160,18 @@ def filling_cyclotron_information(cyclotron_information,date,df,lines):
     cyclotron_information.target_number = (df.columns[0][9:10])
     cyclotron_information.file_number = (df.columns[0]).split()[6]
 
+def get_value(df,position,leng):
+    value = str((df.columns[0]).split()[position][leng[0]:leng[1]])
+    return value 
+
 def get_year_month_day(df,position,leng):
-    year = str((df.columns[0]).split()[position[0]][leng[0][0]:leng[0][1]])
-    month = str((df.columns[0]).split()[position[1]][leng[1][0]:leng[1][1]])
-    day = int((df.columns[0]).split()[position[2]][leng[2][0]:leng[2][1]])
-    return year,month,day
+    date = []
+    for i in range(3):
+        date.append(get_value(df,position[i],leng[i]) )
+    #year = 
+    #month = str((df.columns[0]).split()[position[1]][leng[1][0]:leng[1][1]])
+    #day = int((df.columns[0]).split()[position[2]][leng[2][0]:leng[2][1]])
+    return date
 
 def parse_contents(cyclotron_information,contents, filename, date):
     content_type, content_string = contents.split(',')
@@ -174,10 +188,10 @@ def parse_contents(cyclotron_information,contents, filename, date):
     except: 
        position = [-2,-2,-1]
        leng = [[0,4],[5,7],[0,5]]
-    year,month,day = get_year_month_day(df,position,leng)
-    if day < 10:
-        day = "0" + str(day)
-    date = [year,month,day]
+    date = get_year_month_day(df,position,leng)
+    if int(date[2]) < 10:
+        date[2] = "0" + str(date[2])
+    #date = [year,month,day]
     filling_cyclotron_information(cyclotron_information,date,df,lines)
 
 
