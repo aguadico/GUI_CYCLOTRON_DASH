@@ -79,7 +79,10 @@ LEGEND = {"CHOOSE":[[" "]]*3,
 "TARGET":[["Target current"],["Target pressure"],["Extraction"]],
 "MAGNET":[["Magnet current"],["Foil current","Target current","Collimators current"]]}
 
-
+def fig_setting_layout(fig):
+    fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='#FFFFFF',font=dict(size=16,color="black"),font_family="Arial",margin=dict(t=35))  
+    return fig
 
 def fig_setting(row_number,cyclotron_information,ticker):
     fig_logfile = go.FigureWidget(make_subplots(rows=len(COLUMNS_TO_PLOT[ticker]), cols=1,shared_xaxes=False,
@@ -90,28 +93,22 @@ def fig_setting(row_number,cyclotron_information,ticker):
     fig_logfile.update_layout(height=1500,showlegend=False)
     fig_logfile.update_xaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
     fig_logfile.update_yaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
-    fig_logfile.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='#FFFFFF',font=dict(size=16,color="black"),font_family="Arial",margin=dict(t=35))  
+    fig_logfile = fig_setting_layout(fig_logfile)
     return fig_logfile
 
 def adding_reference(fig_logfile,ticker,i,j):
-    print ("TICKER")
-    print (ticker)
-    print (REFERENCE_VALUE_DICTIONARY[ticker] )
     reference_value = REFERENCE_VALUE_DICTIONARY[ticker] 
+    print ("REFERENCE VALUES")
+    print (reference_value)
     colors = ["orange","red"]
     text = ["Medium risk area","High risk area"]
     for i in range(len(reference_value)):
-            for j in range(len(reference_value[i])):
-                if len(reference_value[i][j]) > 0:
-                    for k in range(2):
-                        fig_logfile.add_hrect(y0=reference_value[i][j][k], y1=reference_value[i][j][k+1], line_width=0, fillcolor=colors[k], opacity=0.05,row=i+1, col=1)
-                        fig_logfile.add_hline(y=reference_value[i][j][k], line_dash="dot",line_color=colors[k],annotation_text=text[k],
+        for j in range(len(reference_value[i])):
+            if len(reference_value[i][j]) > 0:
+                for k in range(2):
+                    fig_logfile.add_hrect(y0=reference_value[i][j][k], y1=reference_value[i][j][k+1], line_width=0, fillcolor=colors[k], opacity=0.05,row=i+1, col=1)
+                    fig_logfile.add_hline(y=reference_value[i][j][k], line_dash="dot",line_color=colors[k],annotation_text=text[k],
                          annotation_position="bottom right",row=i+1, col=1)
-                    #fig_logfile.add_hrect(y0=reference_value[i][j][1], y1=reference_value[i][j][2], line_width=0, fillcolor="red", opacity=0.05,row=i+1, col=1)
-                    #fig_logfile.add_hrect(y0=reference_value[i][j][0], y1=reference_value[i][j][1], line_width=0, fillcolor="orange", opacity=0.05,row=i+1, col=1)
-                    #fig_logfile.add_hline(y=reference_value[i][j][0], line_dash="dot",line_color="orange",annotation_text="Medium risk area",
-                    #     annotation_position="bottom right",row=i+1, col=1)
     return fig_logfile
 
 

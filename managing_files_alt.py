@@ -11,9 +11,13 @@ def get_sparks_numbers(self,dee_number):
         sparks = self.df_subsystem_rf_source.Dee_1_kV[getattr(self.df_subsystem_rf_source,"Dee_1_kV").astype(float) < np.max(dee_voltage.astype(float))*0.75]
         return sparks       
 
+def get_flap_postion(self,flap_number,indexes):
+    position =  np.average(np.array(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float))[indexes[0]:indexes[1]])
+    return position
+
 def get_instant_and_average_speed(self,flap_number):
-    final_average_position = np.average(np.array(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float))[-10:-1])
-    initial_average_position = np.average(np.array(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float))[0:10])
+    final_average_position = get_flap_postion(self,flap_number,[-10,-1]) 
+    initial_average_position = get_flap_postion(self,flap_number,[0,10])
     average_speed = (final_average_position-initial_average_position)/(3*len(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float)))*3600
     instant_speed = ((np.array(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float))[:-1]-np.array(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float))[1:])/3)
     average_instant_speed = np.average(average_speed)
@@ -23,9 +27,10 @@ def get_instant_and_average_speed(self,flap_number):
 
 def get_resonance_speed(self,flap_number,dee_number):  
     initial_flap = getattr(self.df_subsystem_rf_sparks,flap_number).iloc[1]
-    resonance_flap = getattr(self.df_subsystem_rf_sparks,flap_number)[getattr(self.df_subsystem_rf_sparks,dee_number) > 0].iloc[1]
+    flap_range = getattr(self.df_subsystem_rf_sparks,flap_number)[getattr(self.df_subsystem_rf_sparks,dee_number) > 0]
+    resonance_flap = flap_range.iloc[1]
     distance_flap = resonance_flap - initial_flap
-    index_starting_flap = getattr(self.df_subsystem_rf_sparks,flap_number)[getattr(self.df_subsystem_rf_sparks,dee_number) > 0].index[1]
+    index_starting_flap = flap_range.index[1]
     starting_resonance_time  =  (index_starting_flap)*3
     return (initial_flap,resonance_flap,distance_flap)
 
@@ -48,7 +53,6 @@ def file_open(self):
         self.sparks_dee_2 = get_sparks_numbers(self,"Dee_2_kV")
         self.sparks_number = len(self.sparks_dee_1) + len(self.sparks_dee_2)
         # distance to find resonance
-        print ("RESONANCE")
         self.initial_flap_1,self.resonance_flap_1,self.distance_flap_1 = get_resonance_speed(self,"Flap1_pos","Dee_1_kV")
         self.initial_flap_2,self.resonance_flap_2,self.distance_flap_2 = get_resonance_speed(self,"Flap2_pos","Dee_2_kV")
         # 

@@ -11,6 +11,7 @@ import columns_names
 from scipy.optimize import curve_fit
 import getting_subsystems_data_alt 
 import columns_names
+import plotting_logs
 COLUMNS_SOURCE = ["CURRENT_AVE"]
 COLUMNS_VACUUM = ["PRESSURE_AVE"]
 COLORS = ["#223A38","#2E8F88"],["#029386","#069AF3"],["#054907","#15B01A"]
@@ -242,8 +243,7 @@ class cyclotron:
         #fig.update_layout(title="Statistical values")
         fig.update_layout(showlegend=False)
         fig.update_layout(height=1500)
-        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='#FFFFFF',font=dict(size=16,color="black"),font_family="Arial",margin=dict(t=5)) 
+        fig = plotting_logs.fig_setting_layout(fig)
         fig.update_xaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
         fig.update_yaxes(showline=True, linewidth=1, linecolor='black', mirror=True)
         if ticker_horizontal == "DATE":
