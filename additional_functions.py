@@ -26,11 +26,7 @@ COLUMN_NAMES = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV",
     "Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V",
     "Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos",
     "Extr_pos","Balance","RF_fwd_W","RF_refl_W","Foil_No"]
-COLUMN_NAMES_NF = ["Time","Arc_I","Arc_V","Gas_flow","Dee_1_kV",
-    "Dee_2_kV","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I",
-    "Vacuum_P","Target_P","Delta_Dee_kV","Phase_load","Dee_ref_V",
-    "Probe_I","He_cool_P","Flap1_pos","Flap2_pos","Step_pos",
-    "Extr_pos","Balance","RF_fwd_W","RF_refl_W","Foil_No"]
+
 
 def general_status_plot(fig_status,values,range_values,y_position):
     for i in range(len(values[1])):
@@ -74,17 +70,15 @@ def plotting_simple_name(fig,values,settings):
             symmetric=True,
             array=values[2]
             )),row=settings[0], col=settings[1])
-    print ("TICKER LAYER")
-    print (settings[5])
-    if settings[5] == ["ADRF"]:
-        for i in range(len(reference_value)):
-             if len(reference_value[i]) > 0:
-                fig.add_hrect(y0=settings[5][i][1], y1=settings[5][i][2], line_width=0, fillcolor="red", opacity=0.05,row=settings[0], col=settings[1])
-                fig.add_hrect(y0=settings[5][i][0], y1=settings[5][i][1], line_width=0, fillcolor="orange", opacity=0.05,row=settings[0], col=settings[1])
-                fig.add_hline(y=settings[5][i][1], line_dash="dot",line_color="red",annotation_text="High risk area",
-                     annotation_position="bottom right",row=position_x, col=position_y)
-                fig.add_hline(y=reference_value[i][0], line_dash="dot",line_color="orange",annotation_text="Medium risk area",
-                     annotation_position="bottom right",row=settings[0], col=settings[1])
+    fill_colors = ["orange","red"]
+    annotation_text = ["Medium risk area","High risk area"]
+    if settings[-1] == ["ADRF"]:
+        for i in range(len(settings[5])):
+            if len(settings[5][i]) > 0:
+                for j in range(len(fill_colors)):
+                    fig.add_hrect(y0=settings[5][i][j], y1=settings[5][i][j+1], line_width=0, fillcolor=fill_colors[j], opacity=0.05,row=settings[0], col=settings[1])
+                    fig.add_hline(y=settings[5][i][j], line_dash="dot",line_color=fill_colors[j],annotation_text=annotation_text[j],
+                         annotation_position="bottom right",row=settings[0], col=settings[1])
     fig.update_yaxes(title_text=values[3],row=settings[0], col=settings[1])
     return fig
 
@@ -94,49 +88,34 @@ def plotting_simple_no_error(fig,values,settings):
     fig.update_yaxes(title_text=values[2], row=settings[0], col=settings[1])
     return fig
 
-
-def getting_information(cyclotron_information,target_1,target_2,lists):
-    #lists = [list_of_contents, list_of_names, list_of_dates]
-    #fig_volume.update_layout(paper_bgcolor='rgba(0,0,0,0)',
-    #        plot_bgcolor='#F3F6F6',font=dict(size=18,color="#223A38")) 
-    #fig_volume.update_layout(title="Individual log " + str(cyclotron_information.file_number) + " Date " + str(cyclotron_information.date_stamp))
-    for c, n, d in lists: 
-        #all_names.append(str(n[:-4]))
-        parse_contents(cyclotron_information,c, n, d) 
-        target_current = cyclotron_information.file_df.Target_I.astype(float)
-        pre_irradiation_len = (len(cyclotron_information.file_df.Target_I[cyclotron_information.file_df['Target_I'].astype(float) == 50.0].astype(float))) + (len(cyclotron_information.file_df.Target_I[cyclotron_information.file_df['Target_I'].astype(float) == 25.0].astype(float))) + (len(cyclotron_information.file_df.Target_I[cyclotron_information.file_df['Target_I'].astype(float) == 0.0].astype(float)))
-        pre_irradiation_len_relative = (pre_irradiation_len/len(cyclotron_information.file_df.Target_I.astype(float)))
-        max_current = np.max(cyclotron_information.file_df.Target_I.astype(float))    
-        #if ((pre_irradiation_len_relative) < 0.3 and float(max_current) > 15):
-        if (float(max_current) > 15):
-            print ("MAX CURRENT")
-            print (cyclotron_information.file_df.Target_I[cyclotron_information.file_df.Target_I.astype(float)> 20])
-            cyclotron_information.file_output()
-            if float(cyclotron_information.target_number) in [1.0,2.0,3.0]: 
-               print ("THIS TARGET")
-               target_1.selecting_data_to_plot_reset(cyclotron_information)
-            else:
-               print ("OR THIS ONE")
-               target_2.selecting_data_to_plot_reset(cyclotron_information)
-    saving_trends_alt.getting_summary_final(cyclotron_information) 
+def get_summary_target(target_1,target_2):
     target_1.get_summation_per_period()
     target_2.get_summation_per_period()  
-    tfs.write("target_1_charge.out",target_1.df_information)
-    tfs.write("target_2_charge.out",target_2.df_information)
-    cyclotron_information.source_performance = np.average(np.array(cyclotron_information.source_performance_total)[np.array(cyclotron_information.source_performance_total) > 0])         
     df_target_1 = target_1.df_information_foil
     df_target_2 = target_2.df_information_foil
+    return df_target_1,df_target_2
+
+def complete_cyclotron_information(cyclotron_information,df_target_1,df_target_2):
+    cyclotron_information.source_performance = np.average(np.array(cyclotron_information.source_performance_total)[np.array(cyclotron_information.source_performance_total) > 0])          
     cyclotron_information.get_average_std_summary_cummulative(df_target_1,df_target_2)
     cyclotron_information.physical_targets = [np.min(cyclotron_information.df_extraction.PHYSICAL_TARGET),np.max(cyclotron_information.df_extraction.PHYSICAL_TARGET)]
 
-
-def current_vaccum(X, a,b):
-     x,y,z = X
-     return a*(x+y) + b*z
-
-def current(X, a,b):
-     x,y,z = X
-     return a*(x+y) 
+def getting_information(cyclotron_information,target_1,target_2,lists):
+    for c, n, d in lists: 
+        parse_contents(cyclotron_information,c, n, d) 
+        max_current = np.max(cyclotron_information.file_df.Target_I.astype(float))    
+        if (float(max_current) > 15):
+            # STARTING GETTING SUBSYSTEMS PER FILE
+            cyclotron_information.file_output()
+            # SELECTING TARGET
+            if float(cyclotron_information.target_number) in [1.0,2.0,3.0]: 
+               target_1.selecting_data_to_plot_reset(cyclotron_information)
+            else:
+               target_2.selecting_data_to_plot_reset(cyclotron_information)
+    # COMPUTING SUMMARY PER FILE
+    saving_trends_alt.getting_summary_final(cyclotron_information) 
+    df_target_1,df_target_2 = get_summary_target(target_1,target_2)
+    complete_cyclotron_information(cyclotron_information,df_target_1,df_target_2)
 
 
 def getting_lines(df):
@@ -161,7 +140,7 @@ def creating_df(cyclotron_information,all_values):
     cyclotron_information.file_df = pd.DataFrame(list(zip(all_values[0],all_values[1],all_values[2],all_values[3],all_values[4],
         all_values[5],all_values[6],all_values[7],all_values[8],all_values[9],all_values[10],all_values[11],
         all_values[12],all_values[13],all_values[14],all_values[15],all_values[16],all_values[17],all_values[18],
-        all_values[19],all_values[20],all_values[21],all_values[22],all_values[23],all_values[24],all_values[25])),columns=COLUMN_NAMES_NF)
+        all_values[19],all_values[20],all_values[21],all_values[22],all_values[23],all_values[24],all_values[25])),columns=COLUMN_NAMES)
     cyclotron_information.file_df["Collimators"] = cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float)
     cyclotron_information.file_df["Losses"] = (1-(cyclotron_information.file_df.Target_I.astype(float)+cyclotron_information.file_df.Coll_l_I.astype(float)+cyclotron_information.file_df.Coll_r_I.astype(float))/cyclotron_information.file_df.Foil_I.astype(float))*100
     cyclotron_information.file_df["Relative_target"] = cyclotron_information.file_df.Target_I.astype(float)/cyclotron_information.file_df.Foil_I.astype(float)*100
@@ -174,6 +153,12 @@ def filling_cyclotron_information(cyclotron_information,date,df,lines):
     cyclotron_information.target_number = (df.columns[0][9:10])
     cyclotron_information.file_number = (df.columns[0]).split()[6]
 
+def get_year_month_day(df,position,leng):
+    year = str((df.columns[0]).split()[position[0]][leng[0][0]:leng[0][1]])
+    month = str((df.columns[0]).split()[position[1]][leng[1][0]:leng[1][1]])
+    day = int((df.columns[0]).split()[position[2]][leng[2][0]:leng[2][1]])
+    return year,month,day
+
 def parse_contents(cyclotron_information,contents, filename, date):
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
@@ -183,13 +168,13 @@ def parse_contents(cyclotron_information,contents, filename, date):
     all_values = getting_values(lines)
     creating_df(cyclotron_information,all_values)
     try: 
-      day = int((df.columns[0]).split()[-1][8:10])
-      year = str((df.columns[0]).split()[-1][0:4])
-      month = str((df.columns[0]).split()[-1][5:7])
+       day = int((df.columns[0]).split()[-1][8:10])
+       position = [-1,-1,-1]
+       leng = [[0,4],[5,7],[8,10]]
     except: 
-      day = int((df.columns[0]).split()[-1])
-      year = str((df.columns[0]).split()[-2][0:4])
-      month = str((df.columns[0]).split()[-2][5:7])
+       position = [-2,-2,-1]
+       leng = [[0,4],[5,7],[0,5]]
+    year,month,day = get_year_month_day(df,position,leng)
     if day < 10:
         day = "0" + str(day)
     date = [year,month,day]

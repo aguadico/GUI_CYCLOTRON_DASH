@@ -102,11 +102,11 @@ DATAFRAME_TO_PLOT = {"CHOOSE":[["df_zero"]]*3,
 
 REFERENCE_VALUE_DICTIONARY = {"CHOOSE":[[[]],[[]],[[]]],
 "SOURCE":[[[500,700,850,"Upper limit"]],[[1.8,1.9,2,"Upper limit"]],[[5.5,6,6.5,"Upper limit"],[3.5,3,2.5,"Lower limit"]],[[3.5,4.5,6,"Upper limit"]],[[5,10,15,"Upper limit"]]],
-"BEAM":[[[600,700,800]],[[110,120,130]],[[20,25,35]],[[95,85,70]],[[-0.5,-1,-2],[0.5,1,2]]],
+"BEAM":[[[120,130,150]],[[110,120,130]],[[20,25,35]],[[-0.5,-1,-2],[0.5,1,2]]],
 "VACUUM":[[[1.8,1.9,2,"Upper limit"]],[[60,50,40,"Lower limit"]],[[500,700,800,"Upper limit"]],[[2,5,7.5,"Upper limit"]],[[0.35,0.4,0.5,"Upper limit"]]],
 "RF":[[[]],[[13.5,14.5,15,"Upper limit"]],[[400,500,600,"Upper limit"]],[[10,8,6,"Lower limit"]],[[5.5,6,6.5,"Upper limit"],[4.5,4,3.5,"Lower limit"]]],
-"RF_STABILITY":[[[]],[[2,2.5,3,"Upper limit"]],[[1,-0.5,-2.5,"Lower limit"]],[[7.5,10,12.5,"Upper limit"]],[[7,10,15,"Upper limit"]]],
-"TARGET":[[[20,15,12,"Lower limit"]],[[70,72.5,75,"Upper limit"]],[[445,450,460,"Upper limit"]],[[445,450,460,"Upper limit"]]],
+"RF_STABILITY":[[[]],[[2,2.5,4,"Upper limit"]],[[1,-0.5,-2.5,"Lower limit"]],[[7.5,10,12.5,"Upper limit"]],[[7,10,15,"Upper limit"]]],
+"TARGET":[[[20,0,12,"Lower limit"]],[[70,72.5,75,"Upper limit"]],[[445,450,460,"Upper limit"]],[[445,450,460,"Upper limit"]]],
 "MAGNET":[[[]],[[]],[[]]]}
 
 Y_LABEL = {"CHOOSE":[[" "]]*3,
