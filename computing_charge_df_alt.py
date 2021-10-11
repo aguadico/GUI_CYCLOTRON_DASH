@@ -25,17 +25,21 @@ class target_cumulative_current:
         self.df_information["CURRENT_COLL_R"] = []
         self.df_information_foil = df_information
 
-    def reset(self,df_information):
-        self.df_information = df_information
-        self.df_information["DATE"] = []
-        self.df_information["FOIL"] = [] 
-        self.df_information["TARGET"] = []
-        self.df_information["CURRENT_SOURCE"] = [] 
-        self.df_information["CURRENT_FOIL"] = []
-        self.df_information["CURRENT_COLL_L"] = []
-        self.df_information["CURRENT_TARGET"] = []
-        self.df_information["CURRENT_COLL_R"] = []
-        self.df_information_foil = df_information
+    #def reset(self,df_information):
+    #    self.df_information = df_information
+    #    self.df_information["DATE"] = []
+    #    self.df_information["FOIL"] = [] 
+    #    self.df_information["TARGET"] = []
+    #    self.df_information["CURRENT_SOURCE"] = [] 
+    #    self.df_information["CURRENT_FOIL"] = []
+    #    self.df_information["CURRENT_COLL_L"] = []
+    #    self.df_information["CURRENT_TARGET"] = []
+    #    self.df_information["CURRENT_COLL_R"] = []
+    #    self.df_information_foil = df_information
+
+    def get_hour_string(self,file_df,location):
+        hour_string = file_df.Time[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].iloc[location]
+        return hour_string
 
     def selecting_data_to_plot_reset(self,cyclotron_information):
         file_df_zero = cyclotron_information.file_df
@@ -44,34 +48,16 @@ class target_cumulative_current:
         target_number_list = (int(cyclotron_information.target_number))
         total_list = [cyclotron_information.date_stamp,float(cyclotron_information.file_number),foil_number,target_number_list]
         if np.average(file_df.Target_I.astype(float)) > 0.0:
+            # TRY TO USE THE OTHER METHOD
             for name in LIST_NAMES:  
-                initial_hour_string = file_df.Time[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].iloc[0]
-                final_hour_string = file_df.Time[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].iloc[-1]
-                if name == "Arc_I":
-                    initial_hour_string = file_df.Time.iloc[0]
-                    final_hour_string = file_df.Time.iloc[-1]
-                hours = float(str(initial_hour_string)[0:2])
-                minutes = float(str(initial_hour_string)[3:5])
-                seconds = float(str(initial_hour_string)[6:8])
-                hours_final = float(str(final_hour_string)[0:2])
-                minutes_final = float(str(final_hour_string)[3:5])
-                seconds_final = float(str(final_hour_string)[6:8])
-                if float(hours) > float(hours_final): 
-                    print ("HEREEEE")
-                    if float(hours_final) == 0:
-                        hours_final = (float(hours_final) + 24)
-                final_hour = hours_final*3600+minutes_final*60+seconds_final
-                initial_hour = hours*3600+minutes*60+seconds
-                average_current = np.average(getattr(file_df,name)[file_df.Target_I.astype(float) > 0.01*np.max(file_df.Target_I.astype(float))].astype(float))
-                if name == "Arc_I": 
-                    average_current = np.average(getattr(file_df,name).astype(float))
-                length = (final_hour-initial_hour)/3600
-                total_list.append(average_current.astype(float)*length)
+                total_charge = np.sum(getattr(file_df,name).astype(float))*3/3600
+                total_list.append(total_charge)
             df_individual = pd.DataFrame([total_list],columns=COLUMN_NAMES)  
             self.df_information = self.df_information.append(df_individual).reset_index(drop=True)  
         else:
             print ("HERRREEEEEE")
             print (file_df)
+        #print (adsasfda)
            
     def selecting_foil(self):       
         total_foil_list = [np.min(self.df_information_foil_individual.DATE),len(self.df_information_foil_individual.FILE),np.min(self.df_information_foil_individual.FOIL),np.min(self.df_information_foil_individual.TARGET)]
