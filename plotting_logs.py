@@ -98,8 +98,6 @@ def fig_setting(row_number,cyclotron_information,ticker):
 
 def adding_reference(fig_logfile,ticker,i,j):
     reference_value = REFERENCE_VALUE_DICTIONARY[ticker] 
-    print ("REFERENCE VALUES")
-    print (reference_value)
     colors = ["orange","red"]
     text = ["Medium risk area","High risk area"]
     for i in range(len(reference_value)):
@@ -120,9 +118,12 @@ def get_values_and_settings(dataframe_to_plot,ticker,i,j):
     return (values,settings)
 
 def initializing_df(cyclotron_information):
-    cyclotron_information.df_zero["PLOT_1"] = 0
-    cyclotron_information.df_zero["PLOT_2"] = 0
-    cyclotron_information.df_zero["PLOT_3"] = 0    
+    cyclotron_information.df_zero["PLOT_1_AVE"] = 0
+    cyclotron_information.df_zero["PLOT_2_AVE"] = 0
+    cyclotron_information.df_zero["PLOT_3_AVE"] = 0    
+    cyclotron_information.df_zero["PLOT_1_STD"] = 0
+    cyclotron_information.df_zero["PLOT_2_STD"] = 0
+    cyclotron_information.df_zero["PLOT_3_STD"] = 0  
 
 def daily_report(tickers,tabs,input_file,cyclotron_information):     
     row_number = ROW_NUMBER[tickers[0]]

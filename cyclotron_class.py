@@ -72,12 +72,12 @@ class cyclotron:
         self.df_summary_transmission = pd.DataFrame(columns=[columns_names.COLUMNS_TRANSMISSION])
         self.df_extraction_target = pd.DataFrame(columns=[columns_names.COLUMNS_EXTRACTION])
         self.volume_information = pd.DataFrame(columns=[columns_names.COLUMNS_FILLING])
-        self.df_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE","SOURCE_PERFORMANCE_ERROR","TRANSMISSION"])
+        self.df_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE_AVE","SOURCE_PERFORMANCE_STD","TRANSMISSION"])
         self.volume_information  = pd.DataFrame(columns=[columns_names.COLUMNS_VOLUME])
         #INIT DATAFRAMES
         columns_names.initial_df(self)
         self.df_summary = pd.DataFrame([[0]*len(COLUMNS_TOTAL_CHARGE)],columns=[COLUMNS_TOTAL_CHARGE])
-        self.ion_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE","SOURCE_PERFORMANCE_ERROR","TRANSMISSION"])
+        self.ion_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE_AVE","SOURCE_PERFORMANCE_STD","TRANSMISSION"])
         
     def current(self,X, a):
          x,y = X
@@ -218,7 +218,7 @@ class cyclotron:
             self.volume_information = self.getting_sub_dataframe(self.df_filling_volume,target)
             self.df_summary_magnet = self.df_magnet[self.df_magnet.TARGET.astype(float) == float(target)]
             x_values = getattr(self.df_summary_source,ticker_horizontal) 
-            self.df_summary_source["HFLOW_STD"] = [0]*len(self.df_summary_source["HFLOW"])
+            self.df_summary_source["HFLOW_STD"] = [0]*len(self.df_summary_source["HFLOW_AVE"])
             k += 1  
             for i in range(len(columns_names.COLUMNS_TO_PLOT[ticker])): 
                 print ("COLUMNS TO PLOT")
@@ -226,11 +226,16 @@ class cyclotron:
                 print (columns_names.DATAFRAME_TO_PLOT[ticker])
                 for j in range(len(columns_names.COLUMNS_TO_PLOT[ticker][i])):
                     dataframe_to_plot = getattr(self,columns_names.DATAFRAME_TO_PLOT[ticker][i][j])
-                    y_values = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j])
+                    y_values = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j]+"_AVE")
                     print (y_values)
-                    y_values_error = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT_ERROR[ticker][i][j])
+                    y_values_error = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j]+"_STD")
                     units = columns_names.Y_LABEL[ticker][i][j]
                     legend = columns_names.LEGEND[ticker][i][j]
+                    print ("TICKER")
+                    print (i)
+                    print (columns_names.REFERENCE_VALUE_DICTIONARY[ticker])
+                    print (columns_names.COLUMNS_TO_PLOT[ticker][i])
+                    print (columns_names.REFERENCE_VALUE_DICTIONARY[ticker][i])
                     reference_value = columns_names.REFERENCE_VALUE_DICTIONARY[ticker][i]
                     values = [x_values,y_values,y_values_error,units]
                     if ((ticker == "RF") or (ticker == "RF_STABILITY")):

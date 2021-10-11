@@ -122,6 +122,9 @@ def getting_information(cyclotron_information,target_1,target_2,lists):
                target_2.selecting_data_to_plot_reset(cyclotron_information)
     # COMPUTING SUMMARY PER FILE
     df_target_1,df_target_2 = get_summary_target(target_1,target_2)
+    print ("TARGETS")
+    print (df_target_1)
+    print (df_target_2)
     saving_summaries(cyclotron_information,df_target_1,df_target_2)
 
 def saving_summaries(cyclotron_information,df_target_1,df_target_2):
