@@ -62,6 +62,7 @@ class cyclotron:
         self.source_performance = 0
         self.target_min = 0
         self.target_max = 0
+        self.filling_point =0
         self.values_targets = [self.target_min,self.target_max]   
         self.df_summary_source = pd.DataFrame(columns=[columns_names.COLUMNS_SOURCE])
         self.df_summary_vacuum = pd.DataFrame(columns=[columns_names.COLUMNS_VACUUM])
@@ -69,6 +70,7 @@ class cyclotron:
         self.df_summary_rf = pd.DataFrame(columns=[columns_names.COLUMNS_RF])
         self.df_summary_transmission = pd.DataFrame(columns=[columns_names.COLUMNS_TRANSMISSION])
         self.df_extraction_target = pd.DataFrame(columns=[columns_names.COLUMNS_EXTRACTION])
+        self.volume_information = pd.DataFrame(columns=[columns_names.COLUMNS_FILLING])
         self.df_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE","SOURCE_PERFORMANCE_ERROR","TRANSMISSION"])
         self.volume_information  = pd.DataFrame(columns=[columns_names.COLUMNS_VOLUME])
         #INIT DATAFRAMES
@@ -217,7 +219,7 @@ class cyclotron:
             self.df_summary_transmission = self.getting_sub_dataframe(self.df_transmission,target)
             self.df_extraction_target = self.getting_sub_dataframe(self.df_extraction,target)
             self.df_source_performance = self.getting_sub_dataframe(self.ion_source_performance,target)
-            self.volume_information = self.getting_sub_dataframe(self.df_volume,target)
+            self.volume_information = self.getting_sub_dataframe(self.df_filling_volume,target)
             self.df_summary_magnet = self.df_magnet[self.df_magnet.TARGET.astype(float) == float(target)]
             x_values = getattr(self.df_summary_source,ticker_horizontal) 
             self.df_summary_source["HFLOW_STD"] = [0]*len(self.df_summary_source["HFLOW"])

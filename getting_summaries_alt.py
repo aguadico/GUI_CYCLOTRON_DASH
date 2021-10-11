@@ -13,28 +13,6 @@ def get_summary_ion_source(self):
     ave_source_voltage,std_source_voltage,max_source_voltage,min_source_voltage = getting_subsystems_data_alt.get_statistic_values(source_voltage)  
     ave_gas_flow,std_gas_flow,max_gas_flow,min_gas_flow = getting_subsystems_data_alt.get_statistic_values(gas_flow) 
     ave_ratio_current,std_ratio_current,max_ratio_current,min_ratio_current = getting_subsystems_data_alt.get_statistic_values(ratio_current)
-    print ("FILES")
-    print (ave_source_current)
-    print (int(self.file_number))
-    #if self.file_number.isnumeric() == False: 
-    #    self.file_number = "1"
-    print (self.date_stamp)
-    print (self.target_number)
-    print (foil_number)
-    print (float(max_source_current))
-    print (float(min_source_current))
-    print (float(ave_source_current))
-    print (float(std_source_current))
-    print (float(max_source_voltage))
-    print (float(min_source_voltage)) 
-    print (float(ave_source_voltage))
-    print (float(std_source_voltage))
-    print (float(max_gas_flow))
-    print (float(max_ratio_current))
-    print (float(min_ratio_current))
-    print (float(ave_ratio_current))
-    print (float(std_ratio_current))
-    print (float(std_source_current)/float(ave_source_current)*100)
     df_source_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,
     float(max_source_current),float(min_source_current),float(ave_source_current),float(std_source_current),
     float(max_source_voltage),float(min_source_voltage),float(ave_source_voltage),float(std_source_voltage),
@@ -55,9 +33,12 @@ def get_summary_vacuum(self):
     df_vacuum_i = pd.DataFrame((vacuum_values),columns=columns_names.COLUMNS_VACUUM)
     self.df_vacuum = self.df_vacuum.append(df_vacuum_i,ignore_index=True)
 
+def filling_point(self):
+    self.filling_point = np.min(self.df_subsystem_pressure.Target_P[self.df_subsystem_pressure.Target_P.astype(float) > 400].index)
+
 def get_summary_volume(self):
-    pressure_initial = np.min(self.df_subsystem_pressure.Target_P.astype(float)[0:np.min(self.df_subsystem_pressure.Target_P[self.df_subsystem_pressure.Target_P.astype(float) > 400].index)])
-    pressure_final = self.df_subsystem_pressure.Target_P.astype(float)[np.min(self.df_subsystem_pressure.Target_P[self.df_subsystem_pressure.Target_P.astype(float) > 400].index)]
+    pressure_initial = np.min(self.df_subsystem_pressure.Target_P.astype(float)[0:self.filling_point])
+    pressure_final = self.df_subsystem_pressure.Target_P.astype(float)[self.filling_point]
     pressure_irradiation = self.df_subsystem_pressure_irradiation.Target_P
     foil_number = np.average((self.df_subsystem_vacuum.Foil_No))
     vacuum_level = self.df_subsystem_vacuum.Vacuum_P
@@ -70,6 +51,25 @@ def get_summary_volume(self):
     df_volume_i = pd.DataFrame((volume_values),columns=columns_names.COLUMNS_VOLUME)
     self.df_volume = self.df_volume.append(df_volume_i,ignore_index=True)
 
+
+
+def get_hour_minute_seconds(total_time,delta):
+    hour = int(total_time.split(":")[0])+delta
+    minute = int(total_time.split(":")[1])
+    second = int(total_time.split(":")[2])
+    time_seconds = (hour*3600+minute*60+second)
+    return time_seconds
+
+def get_delta_minutes(total_time):
+    initial_time_seconds =  get_hour_minute_seconds(total_time[0],0)
+    if int(total_time[0].split(":")[0]) > int(total_time[-1].split(":")[0]):
+        delta = 24
+    elif int(total_time[0].split(":")[0]) <= int(total_time[-1].split(":")[0]):
+        delta = 0
+    final_time_seconds = get_hour_minute_seconds(total_time[-1],delta)
+    delta_minutes = (final_time_seconds - initial_time_seconds)/60
+    return delta_minutes
+
 def get_summary_magnet(self):
     magnet_current = self.df_subsystem_magnet.Magnet_I
     foil_number = np.average((self.df_subsystem_magnet.Foil_No))
@@ -77,8 +77,6 @@ def get_summary_magnet(self):
     start_isochronism = np.min(self.df_isochronism.Magnet_I)
     end_isochronism = np.max(self.df_isochronism.Magnet_I)
     iso_average = np.average([start_isochronism,end_isochronism])
-    print ("ISOCHRONISM")
-    print (self.df_isochronism.Magnet_I)
     if len(self.df_isochronism.Magnet_I) == 0:
         selected_value =  (self.df_subsystem_magnet.Magnet_I.iloc[0])
     elif len(self.df_isochronism.Magnet_I) != 0:
@@ -87,15 +85,11 @@ def get_summary_magnet(self):
     magnet_current = pd.concat([self.time_all,self.magnet_current_total],axis=1,keys=["Time","Current_I"])
     time_values = magnet_current.drop_duplicates(subset="Current_I").Time.astype(str)
     initial_time = time_values.iloc[0]
+    # Computing the delta time for the magnet to increase
     if len(magnet_current.drop_duplicates(subset="Current_I").Time) > 1:  
         final_time = time_values.iloc[1]
         total_time = [initial_time,final_time]   
-        initial_time_seconds =  (int(total_time[0].split(":")[0])*3600+int(total_time[0].split(":")[1])*60+int(total_time[0].split(":")[2])) 
-        if int(total_time[0].split(":")[0]) > int(total_time[-1].split(":")[0]):
-            final_time_seconds = (int(total_time[-1][0])+24)*3600+int(total_time[-1].split(":")[1])*60+int(total_time[-1].split(":")[2])
-        elif int(total_time[0].split(":")[0]) <= int(total_time[-1].split(":")[0]):
-            final_time_seconds = (int(total_time[-1].split(":")[0])*3600+int(total_time[-1].split(":")[1])*60+int(total_time[-1].split(":")[2]))
-        delta_minutes = (final_time_seconds - initial_time_seconds)/60
+        delta_minutes = get_delta_minutes(total_time)
     elif len(magnet_current.drop_duplicates(subset="Current_I").Time) <= 1:
         delta_minutes = 0
     magnet_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,float(max_magnet_current),float(min_magnet_current),float(ave_magnet_current),float(std_magnet_current),
@@ -194,8 +188,6 @@ def get_summary_beam(self):
 
 
 def get_filling_volume(self,va):
-    #pressure_initial = np.min(self.df_subsystem_pressure.Target_P.astype(float)[0:np.min(self.df_subsystem_pressure.Target_P[self.df_subsystem_pressure.Target_P.astype(float) > 400].index)])
-    #pressure_final = self.df_subsystem_pressure.Target_P.astype(float)[np.min(self.df_subsystem_pressure.Target_P[self.df_subsystem_pressure.Target_P.astype(float) > 400].index)]
     pressure_no_current = self.file_df.Target_P.astype(float)[(self.file_df.Target_I.astype(float) < 1)]
     high_pressure = pressure_no_current[pressure_no_current > 400][3:-3]
     print ("PRESSURE")
