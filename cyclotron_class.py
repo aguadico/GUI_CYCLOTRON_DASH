@@ -44,7 +44,7 @@ COLUMNS_NAMES = ["CUMULATIVE_TARGET_1","CUMULATIVE_TARGET_2","CUMULATIVE_CURRENT
         "CUMULATIVE_CURRENT_COLL_R_2","CUMULATIVE_SOURCE"]
 COLUMNS_FOIL_CHARGE_1 = ["CUMULATIVE_TARGET_1_FOIL_1","CUMULATIVE_TARGET_1_FOIL_2","CUMULATIVE_TARGET_1_FOIL_3","CUMULATIVE_TARGET_1_FOIL_4","CUMULATIVE_TARGET_1_FOIL_5","CUMULATIVE_TARGET_1_FOIL_6"]
 COLUMNS_FOIL_CHARGE_2 = ["CUMULATIVE_TARGET_2_FOIL_1","CUMULATIVE_TARGET_2_FOIL_2","CUMULATIVE_TARGET_2_FOIL_3","CUMULATIVE_TARGET_2_FOIL_4","CUMULATIVE_TARGET_2_FOIL_5","CUMULATIVE_TARGET_2_FOIL_6"]
-COLUMNS_TOTAL = COLUMNS_NAMES + COLUMNS_FOIL_CHARGE_1 + COLUMNS_FOIL_CHARGE_2
+COLUMNS_TOTAL_CHARGE = COLUMNS_NAMES + COLUMNS_FOIL_CHARGE_1 + COLUMNS_FOIL_CHARGE_2
 
 
 
@@ -76,7 +76,7 @@ class cyclotron:
         self.volume_information  = pd.DataFrame(columns=[columns_names.COLUMNS_VOLUME])
         #INIT DATAFRAMES
         columns_names.initial_df(self)
-        self.df_summary = pd.DataFrame([[0]*len(COLUMNS_TOTAL)],columns=[COLUMNS_TOTAL])
+        self.df_summary = pd.DataFrame([[0]*len(COLUMNS_TOTAL_CHARGE)],columns=[COLUMNS_TOTAL_CHARGE])
         self.ion_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE","SOURCE_PERFORMANCE_ERROR","TRANSMISSION"])
         
     def current(self,X, a):
@@ -180,8 +180,8 @@ class cyclotron:
         self.df_summary["CUMULATIVE_CURRENT_COLL_R_1"] = df_target_1.CURRENT_COLL_R.sum()
         self.df_summary["CUMULATIVE_CURRENT_COLL_R_2"] = df_target_2.CURRENT_COLL_R.sum()
         self.df_summary["CUMULATIVE_SOURCE"] = (df_target_1.CURRENT_SOURCE.sum() + df_target_2.CURRENT_SOURCE.sum())/1000 
-        #self.__selecting_target_data(df_target_1,COLUMNS_FOIL_CHARGE_1)
-        #self.__selecting_target_data(df_target_2,COLUMNS_FOIL_CHARGE_2)
+        self.__selecting_target_data(df_target_1,COLUMNS_FOIL_CHARGE_1)
+        self.__selecting_target_data(df_target_2,COLUMNS_FOIL_CHARGE_2)
         
 
     def __selecting_target_data(self,df_target,columns):
@@ -198,13 +198,8 @@ class cyclotron:
         self.target_min = np.min(self.df_extraction.TARGET.astype(float))
         self.target_max = np.max(self.df_extraction.TARGET.astype(float))
         self.values_targets = [self.target_min,self.target_max]
-        #fig = make_subplots(rows=5, cols=1,shared_xaxes=False)
-        #fig.update_layout(height=1500)
-        print ("ENTERING HEREEEEEEE!")
         fig = go.FigureWidget(make_subplots(rows=len(columns_names.COLUMNS_TO_PLOT[ticker]), cols=1,shared_xaxes=False,
                 vertical_spacing=0.05))
-        #fig.update_layout(height=1500)
-        print ("ENTERING HEREEEEEEEE!")
         if ticker == "MAGNET":
             fig = make_subplots(rows=3, cols=1,shared_xaxes=True,
                     vertical_spacing=0.02)
@@ -226,9 +221,13 @@ class cyclotron:
             self.df_summary_source["HFLOW_STD"] = [0]*len(self.df_summary_source["HFLOW"])
             k += 1  
             for i in range(len(columns_names.COLUMNS_TO_PLOT[ticker])): 
+                print ("COLUMNS TO PLOT")
+                print (columns_names.COLUMNS_TO_PLOT[ticker])
+                print (columns_names.DATAFRAME_TO_PLOT[ticker])
                 for j in range(len(columns_names.COLUMNS_TO_PLOT[ticker][i])):
                     dataframe_to_plot = getattr(self,columns_names.DATAFRAME_TO_PLOT[ticker][i][j])
                     y_values = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j])
+                    print (y_values)
                     y_values_error = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT_ERROR[ticker][i][j])
                     units = columns_names.Y_LABEL[ticker][i][j]
                     legend = columns_names.LEGEND[ticker][i][j]

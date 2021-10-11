@@ -12,14 +12,20 @@ def get_sparks_numbers(self,dee_number):
         return sparks       
 
 def get_flap_postion(self,flap_number,indexes):
-    position =  np.average(np.array(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float))[indexes[0]:indexes[1]])
+    position =  np.average(np.array(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float))[indexes[0]:indexes[1]])
     return position
 
 def get_instant_and_average_speed(self,flap_number):
     final_average_position = get_flap_postion(self,flap_number,[-10,-1]) 
-    initial_average_position = get_flap_postion(self,flap_number,[0,10])
-    average_speed = (final_average_position-initial_average_position)/(3*len(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float)))*3600
-    instant_speed = ((np.array(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float))[:-1]-np.array(getattr(self.df_subsystem_rf_sparks,flap_number).astype(float))[1:])/3)
+    initial_average_position = get_flap_postion(self,flap_number,[0,20])
+    print ("INTIAL POSITION")
+    print (self.df_subsystem_rf)
+    print (self.df_subsystem_rf_sparks)
+    print (self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0])
+    print (initial_average_position)
+    print (final_average_position)
+    average_speed = (final_average_position-initial_average_position)/(3*len(getattr(self.df_subsystem_rf,flap_number).astype(float)))*3600
+    instant_speed = ((np.array(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float))[:-1]-np.array(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float))[1:])/3)
     average_instant_speed = np.average(average_speed)
     max_instant_speed = np.max(instant_speed)
     std_instant_speed = np.std(instant_speed)

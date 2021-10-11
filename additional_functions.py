@@ -75,6 +75,7 @@ def adding_limits(fig,settings):
                 fig.add_hrect(y0=settings[5][i][j], y1=settings[5][i][j+1], line_width=0, fillcolor=fill_colors[j], opacity=0.05,row=settings[0], col=settings[1])
                 fig.add_hline(y=settings[5][i][j], line_dash="dot",line_color=fill_colors[j],annotation_text=annotation_text[j],
                         annotation_position="bottom right",row=settings[0], col=settings[1])
+    return fig
 
 def plotting_simple_name(fig,values,settings):
     fig.add_trace(go.Scatter(x=values[0], y=values[1],name=settings[4],mode='markers',                                                         
@@ -83,6 +84,9 @@ def plotting_simple_name(fig,values,settings):
     row=settings[0], col=settings[1])
     if settings[-1] == ["ADRF"]:
         fig = adding_limits(fig,settings)
+    print ("SETTINGS")
+    print (values[3])
+    print (settings)
     fig = updating_figures(fig,values[3],settings)
     return fig
 
