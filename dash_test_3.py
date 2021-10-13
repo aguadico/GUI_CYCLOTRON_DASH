@@ -119,9 +119,7 @@ def display_foils_2_4_5_6(loading,tabs):
     for dict_value,limit,fig_size_i,title in zip(dict_keys,limits,fig_size,titles):
         print ("DICT KEY")
         print (dict_value)
-        print (cyclotron_information.df_summary)
         figs.append(plotting_bars(dict_value,limit,fig_size_i,title))
-    #print (adasas)
     return figs[0],figs[1],figs[2],figs[3],figs[4]
 
 

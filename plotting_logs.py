@@ -38,14 +38,14 @@ import time
 COLORS = ["#A0BBBC","#223A38","#497873"]
 REFERENCE_VALUE_DICTIONARY = {"CHOOSE":[[[]],[[]]],
 "SOURCE":[[[600,700,800]],[[120,130,140]],[[20,25,35]]],
-"BEAM":[[[600,700,800]],[[110,120,130]],[[20,25,35]],[[95,85,70]],[[-0.5,-1,-2],[0.5,1,2]]],
+"BEAM":[[[600,700,800]],[[110,120,130]],[[20,25,35]],[[85,75,70]],[[-0.5,-1,-2],[0.5,1,2]]],
 "VACUUM":[[[600,700,800]],[[1.6,1.7,1.8]],[]],
 "RF":[[[]],[[10,5,0]],[[13,14,15],[0.5,0.6,0.7]]],
 "TARGET":[[[110,120,130]],[[450,460,480]],[]],
 "MAGNET":[[[]],[[]]]}
 
 
-ROW_NUMBER = {"CHOOSE":3,"SOURCE":3,"BEAM":5,"VACUUM":5,"RF":3,"TARGET":3,"MAGNET":1}
+ROW_NUMBER = {"CHOOSE":4,"SOURCE":3,"BEAM":5,"VACUUM":5,"RF":3,"TARGET":3,"MAGNET":1}
 
 COLUMNS_TO_PLOT = {"CHOOSE":[["PLOT_1"],["PLOT_2"],["PLOT_3"]],
 "SOURCE":[["Arc_I"],["Target_I"],["Collimators"],["Vacuum_mbar"]],
@@ -59,7 +59,7 @@ HORIZONTAL_VALUES = {"CHOOSE":[["PLOT_1"],["PLOT_2"],["PLOT_3"]],
 "SOURCE":[["Time"]]*4,
 "BEAM":[["Time"]]*5,"VACUUM":[["Time"]]*3,"RF":[["Time"]*3]*3,"TARGET":[["Time"]]*3,"MAGNET":[["Time"],["Magnet_I","Magnet_I","Magnet_I"]]}
 
-DATAFRAME_TO_PLOT = {"CHOOSE":[["df_zero"]]*3,
+DATAFRAME_TO_PLOT = {"CHOOSE":[["df_zero_individual"]]*3,
 "SOURCE":[["file_df"]]*4,
 "BEAM":[["file_df"]]*5,"VACUUM":[["file_df"]]*3,"RF":[["file_df"]*3]*3,"TARGET":[["file_df"]]*3,"MAGNET":[["file_df"],["df_isochronism","df_isochronism","df_isochronism"]]}
 
@@ -96,7 +96,7 @@ def fig_setting(row_number,cyclotron_information,ticker):
     fig_logfile = fig_setting_layout(fig_logfile)
     return fig_logfile
 
-def adding_reference(fig_logfile,ticker,i,j):
+def adding_reference(fig_logfile,ticker):
     reference_value = REFERENCE_VALUE_DICTIONARY[ticker] 
     colors = ["orange","red"]
     text = ["Medium risk area","High risk area"]
@@ -110,38 +110,47 @@ def adding_reference(fig_logfile,ticker,i,j):
     return fig_logfile
 
 
-def get_values_and_settings(dataframe_to_plot,ticker,i,j):
-    values_to_plot = getattr(dataframe_to_plot,COLUMNS_TO_PLOT[ticker][i][j]).astype(float)
-    horizontal_values = getattr(dataframe_to_plot,HORIZONTAL_VALUES[ticker][i][j])
-    values = [horizontal_values,values_to_plot,Y_LABEL[ticker][i][j]]
-    settings = [i+1,1,COLORS[j],LEGEND[ticker][i][j],10]
-    return (values,settings)
+#def get_values_and_settings(horizontal_values,position,y_label,legend,j):#
+#   
+#    
+#    return (values,settings)
 
 def initializing_df(cyclotron_information):
-    cyclotron_information.df_zero["PLOT_1_AVE"] = 0
-    cyclotron_information.df_zero["PLOT_2_AVE"] = 0
-    cyclotron_information.df_zero["PLOT_3_AVE"] = 0    
-    cyclotron_information.df_zero["PLOT_1_STD"] = 0
-    cyclotron_information.df_zero["PLOT_2_STD"] = 0
-    cyclotron_information.df_zero["PLOT_3_STD"] = 0  
+    cyclotron_information.df_zero_individual["PLOT_1"] = 0
+    cyclotron_information.df_zero_individual["PLOT_2"] = 0
+    cyclotron_information.df_zero_individual["PLOT_3"] = 0    
+    cyclotron_information.df_zero_individual["PLOT_1"] = 0
+    cyclotron_information.df_zero_individual["PLOT_2"] = 0
+    cyclotron_information.df_zero_individual["PLOT_3"] = 0  
+
+def plotting_isochronism(cyclotron_information,dataframe_to_plot,fig_logfile):
+    dataframe_to_plot = dataframe_to_plot.iloc[:-1]
+    fig_logfile.add_vline(x=cyclotron_information.df_isochronism.Magnet_I.iloc[-1],line_width=4, line_dash="dot",line_color="green",annotation_text="Isochronism"
+            ,row=2, col=1)
+    fig_logfile.update_xaxes(title_text="Time [HH:MM:SS]", row=1, col=1)
+    fig_logfile.update_xaxes(title_text="Current [A]", row=2, col=1)
+    return fig_logfile
 
 def daily_report(tickers,tabs,input_file,cyclotron_information):     
     row_number = ROW_NUMBER[tickers[0]]
-    cyclotron_information.df_zero = pd.DataFrame(columns=["Time","PLOT_1","PLOT_2","PLOT_3"])
+    cyclotron_information.df_zero_individual = pd.DataFrame(columns=["Time","PLOT_1","PLOT_2","PLOT_3"])
     initializing_df(cyclotron_information)
     fig_logfile = fig_setting(row_number,cyclotron_information,tickers[0])
-    for i in range(len(COLUMNS_TO_PLOT[tickers[0]])):
-      for j in range(len(COLUMNS_TO_PLOT[tickers[0]][i])):
-        dataframe_to_plot = getattr(cyclotron_information,DATAFRAME_TO_PLOT[tickers[0]][i][j])
-        if DATAFRAME_TO_PLOT[tickers[0]][i][j] == "df_isochronism":
-           dataframe_to_plot = dataframe_to_plot.iloc[:-1]
-           fig_logfile.add_vline(x=cyclotron_information.df_isochronism.Magnet_I.iloc[-1],line_width=4, line_dash="dot",line_color="green",annotation_text="Isochronism"
-            ,row=2, col=1)
-           fig_logfile.update_xaxes(title_text="Time [HH:MM:SS]", row=1, col=1)
-           fig_logfile.update_xaxes(title_text="Current [A]", row=2, col=1)
-        values,settings = get_values_and_settings(dataframe_to_plot,tickers[0],i,j)
+    positions = list(np.array(list(range(len(COLUMNS_TO_PLOT[tickers[0]]))))+1)
+    for set_of_columns,dataframes,horizontal_values,y_labels,legends,position in zip(COLUMNS_TO_PLOT[tickers[0]],DATAFRAME_TO_PLOT[tickers[0]],HORIZONTAL_VALUES[tickers[0]],Y_LABEL[tickers[0]],LEGEND[tickers[0]],positions):
+      j = 0
+      for column,df,horizontal_value,y_label,legend in zip(set_of_columns,dataframes,horizontal_values,y_labels,legends):
+        dataframe_to_plot = getattr(cyclotron_information,df)
+        y_values = getattr(dataframe_to_plot,column).astype(float)
+        x_values = getattr(dataframe_to_plot,horizontal_value)
+        values = [x_values,y_values,y_label]
+        settings = [position,1,COLORS[j],legend,10]
+        #values,settings = get_values_and_settings(dataframe_to_plot,column,horizontal_value,position,y_label,legend,j)
+        j = j+1
+        if df == "df_isochronism":
+            fig_logfile = plotting_isochronism(cyclotron_information,dataframe_to_plot,fig_logfile)      
         fig_logfile = additional_functions.plotting_simple_no_error(fig_logfile,values,settings)
     if tickers[1] == ["ADRF"]:
-        fig_logfile = adding_reference(fig_logfile,tickers[0],i,j)
+        fig_logfile = adding_reference(fig_logfile,tickers[0])
     return (fig_logfile)
    

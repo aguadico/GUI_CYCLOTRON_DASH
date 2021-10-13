@@ -74,6 +74,7 @@ class cyclotron:
         self.volume_information = pd.DataFrame(columns=[columns_names.COLUMNS_FILLING])
         self.df_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE_AVE","SOURCE_PERFORMANCE_STD","TRANSMISSION"])
         self.volume_information  = pd.DataFrame(columns=[columns_names.COLUMNS_VOLUME])
+        self.df_zero = pd.DataFrame(columns=["PLOT_1_AVE","PLOT_2_AVE","PLOT_3_AVE","PLOT_1_STD","PLOT_2_STD","PLOT_3_STD"])
         #INIT DATAFRAMES
         columns_names.initial_df(self)
         self.df_summary = pd.DataFrame([[0]*len(COLUMNS_TOTAL_CHARGE)],columns=[COLUMNS_TOTAL_CHARGE])
