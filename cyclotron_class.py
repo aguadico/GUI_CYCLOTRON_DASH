@@ -16,6 +16,7 @@ COLUMNS_SOURCE = ["CURRENT_AVE"]
 COLUMNS_VACUUM = ["PRESSURE_AVE"]
 COLORS = ["#223A38","#2E8F88"],["#029386","#069AF3"],["#054907","#15B01A"]
 
+
 COLORS_TRENDS = ["#A0BBBC","#223A38","#0058AB"]
 COLORS_TRENDS_OUT = ['#497873','#497873']
 #COLORS_TRENDS = ["#0058AB","#75bbfd"]
@@ -65,20 +66,8 @@ class cyclotron:
         self.target_max = 0
         self.filling_point =0
         self.values_targets = [self.target_min,self.target_max]   
-        self.df_summary_source = pd.DataFrame(columns=[columns_names.COLUMNS_SOURCE])
-        self.df_summary_vacuum = pd.DataFrame(columns=[columns_names.COLUMNS_VACUUM])
-        self.df_summary_beam = pd.DataFrame(columns=[columns_names.COLUMNS_BEAM])
-        self.df_summary_rf = pd.DataFrame(columns=[columns_names.COLUMNS_RF])
-        self.df_summary_transmission = pd.DataFrame(columns=[columns_names.COLUMNS_TRANSMISSION])
-        self.df_extraction_target = pd.DataFrame(columns=[columns_names.COLUMNS_EXTRACTION])
-        self.volume_information = pd.DataFrame(columns=[columns_names.COLUMNS_FILLING])
-        self.df_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE_AVE","SOURCE_PERFORMANCE_STD","TRANSMISSION"])
-        self.volume_information  = pd.DataFrame(columns=[columns_names.COLUMNS_VOLUME])
-        self.df_zero = pd.DataFrame(columns=["PLOT_1_AVE","PLOT_2_AVE","PLOT_3_AVE","PLOT_1_STD","PLOT_2_STD","PLOT_3_STD"])
-        #INIT DATAFRAMES
         columns_names.initial_df(self)
         self.df_summary = pd.DataFrame([[0]*len(COLUMNS_TOTAL_CHARGE)],columns=[COLUMNS_TOTAL_CHARGE])
-        self.ion_source_performance = pd.DataFrame(columns=["FILE","TARGET","SOURCE_PERFORMANCE_AVE","SOURCE_PERFORMANCE_STD","TRANSMISSION"])
         
     def current(self,X, a):
          x,y = X
@@ -128,11 +117,6 @@ class cyclotron:
            x = a*T_1*T_2
            sigma_a = (np.diag(pcov)**0.5)[0]
            sigma_x = ((T_1*T_2*sigma_a)**2+(a*T_2*sigma_T_1)**2+(a*T_1*sigma_T_2))**0.5
-           print ("x")
-           print (x)
-           print (sigma_x)
-           print ("TRANSMISSION")
-           print (T_1)
         else: 
             print ("TOO SHORT")
             a = 0
@@ -144,10 +128,7 @@ class cyclotron:
         print (sigma_x)
         print ("TRANSMISSION")
         #print (T_1*T_2)
-        self.ion_source_performance = self.ion_source_performance.append({"FILE":self.file_number,'TARGET':self.target_number,'SOURCE_PERFORMANCE':x,'SOURCE_PERFORMANCE_ERROR':sigma_x,"TRANSMISSION":T_1}, ignore_index=True)
-        #cyclotron_data.ion_source_performance = cyclotron_data.ion_source_performance.append({'SOURCE_PERFORMANCE':x}, ignore_index=True)
-        #cyclotron_data.ion_source_performance = cyclotron_data.ion_source_performance.append({'SOURCE_PERFORMANCE_ERROR':sigma_x}, ignore_index=True)
-        #print (cyclotron_data.ion_source_performance)
+        self.ion_source_performance = self.ion_source_performance.append({"FILE":self.file_number,'TARGET':self.target_number,'SOURCE_PERFORMANCE_AVE':x,'SOURCE_PERFORMANCE_STD':sigma_x,"TRANSMISSION":T_1}, ignore_index=True)
         self.source_performance_total.append(x)
         self.source_performance_total_error.append(sigma_x)
         print ("ION SOURCE PERFORMANCE DF")
@@ -193,6 +174,40 @@ class cyclotron:
         filtered_data = data[data.TARGET.astype(float) == float(target)]
         return (filtered_data)
 
+
+    def _getting_df_summary_per_target(self,target):
+        self.df_summary_source = self.getting_sub_dataframe(self.df_source,target)
+        self.df_summary_vacuum = self.getting_sub_dataframe(self.df_vacuum,target)
+        self.df_summary_beam = self.getting_sub_dataframe(self.df_beam,target)
+        self.df_summary_rf = self.getting_sub_dataframe(self.df_rf,target)
+        self.df_summary_transmission = self.getting_sub_dataframe(self.df_transmission,target)
+        self.df_extraction_target = self.getting_sub_dataframe(self.df_extraction,target)
+        print ("DATAFRAME PERFORMANCE")
+        print (self.df_source_performance)
+        self.df_source_performance = self.getting_sub_dataframe(self.ion_source_performance,target)
+        self.volume_information = self.getting_sub_dataframe(self.df_filling_volume,target)
+        self.df_summary_magnet = self.df_magnet[self.df_magnet.TARGET.astype(float) == float(target)]
+
+
+    def _get_values_and_settings(self,dataframe_to_plot,target,ticker,ticker_horizontal,i,j):
+        x_values = getattr(self.df_summary_source,ticker_horizontal) 
+        y_values = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j]+"_AVE")
+        y_values_error = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j]+"_STD")
+        units = columns_names.Y_LABEL[ticker][i][j]
+        legend = columns_names.LEGEND[ticker][i][j]
+        reference_value = columns_names.REFERENCE_VALUE_DICTIONARY[ticker][i]
+        values = [x_values,y_values,y_values_error,units]
+        if ((ticker == "RF") or (ticker == "RF_STABILITY")):
+            color = columns_names.COLORS_TRENDS[ticker][j]
+            color_out = columns_names.COLORS_TRENDS_OUT[ticker][j]
+        else:
+            color = columns_names.COLORS_TRENDS[str(int(target))]
+            color_out = columns_names.COLORS_TRENDS_OUT[str(int(target))]
+        settings = [i+1,1,color,color_out,legend + " T " + str(target),reference_value]
+        return values,settings
+
+
+
     def plotting_statistics(self,ticker,ticker_horizontal,ticker_layer):  
         k = - 1
         #df_summary_source = self.df_source
@@ -208,44 +223,20 @@ class cyclotron:
             fig = make_subplots(rows=4, cols=1,shared_xaxes=True,
                     vertical_spacing=0.02)
         for target in self.values_targets:
-            self.df_summary_source = self.getting_sub_dataframe(self.df_source,target)
-            self.df_summary_vacuum = self.getting_sub_dataframe(self.df_vacuum,target)
-            self.df_summary_beam = self.getting_sub_dataframe(self.df_beam,target)
-            self.df_summary_rf = self.getting_sub_dataframe(self.df_rf,target)
-            #self.df_summary_rf = self.getting_sub_dataframe(self.df,target)
-            self.df_summary_transmission = self.getting_sub_dataframe(self.df_transmission,target)
-            self.df_extraction_target = self.getting_sub_dataframe(self.df_extraction,target)
-            self.df_source_performance = self.getting_sub_dataframe(self.ion_source_performance,target)
-            self.volume_information = self.getting_sub_dataframe(self.df_filling_volume,target)
-            self.df_summary_magnet = self.df_magnet[self.df_magnet.TARGET.astype(float) == float(target)]
-            x_values = getattr(self.df_summary_source,ticker_horizontal) 
+            if np.isnan(target) == True:
+               target = "1" 
+            print (target)
+            self._getting_df_summary_per_target(target)
             self.df_summary_source["HFLOW_STD"] = [0]*len(self.df_summary_source["HFLOW_AVE"])
             k += 1  
             for i in range(len(columns_names.COLUMNS_TO_PLOT[ticker])): 
-                print ("COLUMNS TO PLOT")
-                print (columns_names.COLUMNS_TO_PLOT[ticker])
-                print (columns_names.DATAFRAME_TO_PLOT[ticker])
                 for j in range(len(columns_names.COLUMNS_TO_PLOT[ticker][i])):
                     dataframe_to_plot = getattr(self,columns_names.DATAFRAME_TO_PLOT[ticker][i][j])
-                    y_values = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j]+"_AVE")
-                    print (y_values)
-                    y_values_error = getattr(dataframe_to_plot,columns_names.COLUMNS_TO_PLOT[ticker][i][j]+"_STD")
-                    units = columns_names.Y_LABEL[ticker][i][j]
-                    legend = columns_names.LEGEND[ticker][i][j]
-                    print ("TICKER")
-                    print (i)
-                    print (columns_names.REFERENCE_VALUE_DICTIONARY[ticker])
-                    print (columns_names.COLUMNS_TO_PLOT[ticker][i])
-                    print (columns_names.REFERENCE_VALUE_DICTIONARY[ticker][i])
-                    reference_value = columns_names.REFERENCE_VALUE_DICTIONARY[ticker][i]
-                    values = [x_values,y_values,y_values_error,units]
-                    if ((ticker == "RF") or (ticker == "RF_STABILITY")):
-                        settings = [i+1,1,COLORS_RF[k][j],COLORS_RF_OUT[k][j],legend + " T " + str(target),reference_value,ticker_layer]
-                        fig = additional_functions.plotting_simple_name(fig,values,settings)
-                    else:
-                        settings = [i+1,1,COLORS_TRENDS[k],COLORS_TRENDS_OUT[k],legend + " T " + str(target),reference_value,ticker_layer]
-                        fig = additional_functions.plotting_simple_name(fig,values,settings)
-        #fig.update_layout(title="Statistical values")
+                    print ("DATAFRAME TO PLOT")
+                    print (dataframe_to_plot)
+                    [values,settings] = self._get_values_and_settings(dataframe_to_plot,target,ticker,ticker_horizontal,i,j)
+                    settings = settings + [ticker_layer]
+                    fig = additional_functions.plotting_simple_name(fig,values,settings)
         fig.update_layout(showlegend=False)
         fig.update_layout(height=1500)
         fig = plotting_logs.fig_setting_layout(fig)
