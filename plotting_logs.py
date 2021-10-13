@@ -115,6 +115,20 @@ def adding_reference(fig_logfile,ticker):
 #    
 #    return (values,settings)
 
+def plotting_functions(cyclotron_information,parameters,fig_logfile,position,j):
+    for column,df,horizontal_value,y_label,legend in parameters:
+        dataframe_to_plot = getattr(cyclotron_information,df)
+        y_values = getattr(dataframe_to_plot,column).astype(float)
+        x_values = getattr(dataframe_to_plot,horizontal_value)
+        values = [x_values,y_values,y_label]
+        settings = [position,1,COLORS[j],legend,10]
+        #values,settings = get_values_and_settings(dataframe_to_plot,column,horizontal_value,position,y_label,legend,j)
+        j = j+1
+        if df == "df_isochronism":
+            fig_logfile = plotting_isochronism(cyclotron_information,dataframe_to_plot,fig_logfile)      
+        fig_logfile = additional_functions.plotting_simple_no_error(fig_logfile,values,settings)
+    return fig_logfile
+
 def initializing_df(cyclotron_information):
     cyclotron_information.df_zero_individual["PLOT_1"] = 0
     cyclotron_information.df_zero_individual["PLOT_2"] = 0
@@ -139,17 +153,8 @@ def daily_report(tickers,tabs,input_file,cyclotron_information):
     positions = list(np.array(list(range(len(COLUMNS_TO_PLOT[tickers[0]]))))+1)
     for set_of_columns,dataframes,horizontal_values,y_labels,legends,position in zip(COLUMNS_TO_PLOT[tickers[0]],DATAFRAME_TO_PLOT[tickers[0]],HORIZONTAL_VALUES[tickers[0]],Y_LABEL[tickers[0]],LEGEND[tickers[0]],positions):
       j = 0
-      for column,df,horizontal_value,y_label,legend in zip(set_of_columns,dataframes,horizontal_values,y_labels,legends):
-        dataframe_to_plot = getattr(cyclotron_information,df)
-        y_values = getattr(dataframe_to_plot,column).astype(float)
-        x_values = getattr(dataframe_to_plot,horizontal_value)
-        values = [x_values,y_values,y_label]
-        settings = [position,1,COLORS[j],legend,10]
-        #values,settings = get_values_and_settings(dataframe_to_plot,column,horizontal_value,position,y_label,legend,j)
-        j = j+1
-        if df == "df_isochronism":
-            fig_logfile = plotting_isochronism(cyclotron_information,dataframe_to_plot,fig_logfile)      
-        fig_logfile = additional_functions.plotting_simple_no_error(fig_logfile,values,settings)
+      parameters = zip(set_of_columns,dataframes,horizontal_values,y_labels,legends)
+      fig_logfile = plotting_functions(cyclotron_information,parameters,fig_logfile,position,j)
     if tickers[1] == ["ADRF"]:
         fig_logfile = adding_reference(fig_logfile,tickers[0])
     return (fig_logfile)
