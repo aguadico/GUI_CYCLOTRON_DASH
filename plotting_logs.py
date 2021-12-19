@@ -27,25 +27,25 @@ import dash_table as dt
 import io
 from datetime import date
 import managing_files_alt
-import computing_charge_df_alt
+#import computing_charge_df_alt
 #import ion_source_studies
 import additional_functions
 import cyclotron_class
 import app_layout
-import getting_subsystems_data_alt
+import getting_subsystems_data
 import time
 
 COLORS = ["#A0BBBC","#223A38","#497873"]
 REFERENCE_VALUE_DICTIONARY = {"CHOOSE":[[[]],[[]]],
 "SOURCE":[[[600,700,800]],[[120,130,140]],[[20,25,35]]],
-"BEAM":[[[600,700,800]],[[110,120,130]],[[20,25,35]],[[85,75,70]],[[-0.5,-1,-2],[0.5,1,2]]],
+"BEAM":[[[600,700,800]],[[110,120,130]],[[20,25,35]],[[85,75,70]],[[0.5,10,100]]],
 "VACUUM":[[[600,700,800]],[[1.6,1.7,1.8]],[]],
-"RF":[[[]],[[10,5,0]],[[13,14,15],[0.5,0.6,0.7]]],
+"RF":[[[]],[[10,5,0]],[[13,14,15],[0.5,1.5,3]]],
 "TARGET":[[[110,120,130]],[[450,460,480]],[]],
 "MAGNET":[[[]],[[]]]}
 
 
-ROW_NUMBER = {"CHOOSE":4,"SOURCE":3,"BEAM":5,"VACUUM":5,"RF":3,"TARGET":3,"MAGNET":1}
+ROW_NUMBER = {"CHOOSE":4,"SOURCE":4,"BEAM":5,"VACUUM":5,"RF":3,"TARGET":3,"MAGNET":1}
 
 COLUMNS_TO_PLOT = {"CHOOSE":[["PLOT_1"],["PLOT_2"],["PLOT_3"]],
 "SOURCE":[["Arc_I"],["Target_I"],["Collimators"],["Vacuum_mbar"]],

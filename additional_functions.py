@@ -4,14 +4,14 @@ import base64
 import io
 import saving_trends_alt
 import managing_files_alt
-import computing_charge_df_alt
+#import computing_charge_df_alt
 #simport ion_source_studies
 import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import cyclotron_class
 import tfs
-import getting_subsystems_data_alt
+import getting_subsystems_data
 
 
 RANGE_VALUES_CHARGE = {"TARGET_COLLIMATORS":[[[0,10],[10,12.5],[12.5,15]],[[0,300],[300,500],[500,700]],[[0,300],[300,500],[500,700]]],
@@ -70,6 +70,8 @@ def adding_limits(fig,settings):
     fill_colors = ["orange","red"]
     annotation_text = ["Medium risk area","High risk area"]
     for i in range(len(settings[5])):
+        print ("SETTINGS")
+        print (settings[5][i])
         if len(settings[5][i]) > 0:
             for j in range(len(fill_colors)):
                 fig.add_hrect(y0=settings[5][i][j], y1=settings[5][i][j+1], line_width=0, fillcolor=fill_colors[j], opacity=0.05,row=settings[0], col=settings[1])
@@ -108,30 +110,11 @@ def complete_cyclotron_information(cyclotron_information,df_target_1,df_target_2
     cyclotron_information.get_average_std_summary_cummulative(df_target_1,df_target_2)
     cyclotron_information.physical_targets = [np.min(cyclotron_information.df_extraction.PHYSICAL_TARGET),np.max(cyclotron_information.df_extraction.PHYSICAL_TARGET)]
 
-def getting_information(cyclotron_information,target_1,target_2,lists):
-    for c, n, d in lists: 
-        parse_contents(cyclotron_information,c, n, d) 
-        max_current = np.max(cyclotron_information.file_df.Target_I.astype(float))    
-        if (float(max_current) > 15):
-            # STARTING GETTING SUBSYSTEMS PER FILE
-            cyclotron_information.file_output()
-            # SELECTING TARGET
-            if float(cyclotron_information.target_number) in [1.0,2.0,3.0]: 
-               target_1.selecting_data_to_plot_reset(cyclotron_information)
-            else:
-               target_2.selecting_data_to_plot_reset(cyclotron_information)
-    # COMPUTING SUMMARY PER FILE
-    df_target_1,df_target_2 = get_summary_target(target_1,target_2)
-    print ("TARGETS")
-    print (df_target_1)
-    print (df_target_2)
-    saving_summaries(cyclotron_information,df_target_1,df_target_2)
 
 def saving_summaries(cyclotron_information,df_target_1,df_target_2):
     saving_trends_alt.getting_summary_final(cyclotron_information) 
     complete_cyclotron_information(cyclotron_information,df_target_1,df_target_2)
     
-
 def getting_lines(df):
     lines = []
     for i in range(len(df)):
@@ -163,7 +146,7 @@ def creating_df(cyclotron_information,all_values):
 def filling_cyclotron_information(cyclotron_information,date,df,lines):
     cyclotron_information.date_stamp = str(date[0]) + "-" + str(date[1]) + "-" + str(date[2])
     cyclotron_information.name = lines[0][2]
-    cyclotron_information.df_isochronism = getting_subsystems_data_alt.get_isochronism(cyclotron_information.file_df)
+    cyclotron_information.df_isochronism = getting_subsystems_data.get_isochronism(cyclotron_information.file_df)
     cyclotron_information.target_number = (df.columns[0][9:10])
     cyclotron_information.file_number = (df.columns[0]).split()[6]
 

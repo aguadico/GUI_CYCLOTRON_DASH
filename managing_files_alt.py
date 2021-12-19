@@ -1,9 +1,14 @@
 #Functions: open the files and get key parameters and summaries 
-import getting_subsystems_data_alt
-import getting_subsystems_alt
-import getting_summaries_alt
+import getting_subsystems_data
+import getting_subsystems_dataframes
+import getting_summaries_subsystems
 import pandas as pd
 import numpy as np
+
+
+#def getting_sparks(self,voltage_value):
+#        voltage_dee = self.df_subsystem_rf_sparks.Dee_1_kV[getattr(self.df_subsystem_rf_sparks,voltage_value) < float(self.voltage_limit.iloc[self.current_row])]
+#        return (voltage_dee)
 
 def get_sparks_numbers(self,dee_number):    
         dee_voltage = getattr(self.df_subsystem_rf,dee_number)
@@ -16,15 +21,9 @@ def get_flap_postion(self,flap_number,indexes):
     return position
 
 def get_instant_and_average_speed(self,flap_number):
-    final_average_position = get_flap_postion(self,flap_number,[-10,-1]) 
-    initial_average_position = get_flap_postion(self,flap_number,[0,20])
-    print ("INTIAL POSITION")
-    print (self.df_subsystem_rf)
-    print (self.df_subsystem_rf_sparks)
-    print (self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0])
-    print (initial_average_position)
-    print (final_average_position)
-    average_speed = (final_average_position-initial_average_position)/(3*len(getattr(self.df_subsystem_rf,flap_number).astype(float)))*3600
+    final_average_position = getting_subsystems_data.get_flap_postion(self,flap_number,[-10,-1]) 
+    initial_average_position = getting_subsystems_data.get_flap_postion(self,flap_number,[0,20])
+    average_speed = (final_average_position-initial_average_position)/(3*len(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float)))*3600
     instant_speed = ((np.array(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float))[:-1]-np.array(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float))[1:])/3)
     average_instant_speed = np.average(average_speed)
     max_instant_speed = np.max(instant_speed)
@@ -41,41 +40,30 @@ def get_resonance_speed(self,flap_number,dee_number):
     return (initial_flap,resonance_flap,distance_flap)
 
 def file_open(self):
-        [self.target_current,self.max_current] = getting_subsystems_data_alt.get_target_parameters(self.file_df)
-        # sets a lower ion source limit for finding RF sparks 
-        self.low_source_current = getting_subsystems_data_alt.get_source_parameters_limit(self.file_df)
-        # get irradiation hours
-        self.time = getting_subsystems_data_alt.get_time(self.file_df,self.max_current)
-        self.time_all = getting_subsystems_data_alt.get_time(self.file_df,15)
-        self.foil_number = getting_subsystems_data_alt.get_foil_number(self.file_df,self.max_current) 
-        self.probe_current = getting_subsystems_data_alt.get_probe_current(self.file_df)
-        # creating dataframes for all the different susbystems with time evolution 
-        self.df_subsystem_source = getting_subsystems_alt.get_subsystems_dataframe_source(self)
-        self.df_subsystem_vacuum = getting_subsystems_alt.get_subsystems_dataframe_vacuum(self)
-        self.df_subsystem_magnet = getting_subsystems_alt.get_subsystems_dataframe_magnet(self)
-        self.df_subsystem_rf = getting_subsystems_alt.get_subsystems_dataframe_rf(self)
-        self.df_subsystem_rf_sparks = getting_subsystems_alt.get_subsystems_dataframe_rf_sparks(self)
-        self.sparks_dee_1 = get_sparks_numbers(self,"Dee_1_kV")
-        self.sparks_dee_2 = get_sparks_numbers(self,"Dee_2_kV")
+        [self.target_current,self.max_current] = getting_subsystems_data.get_target_parameters(self.file_df)
+        self.low_source_current = getting_subsystems_data.get_source_parameters_limit(self.file_df)
+        self.time = getting_subsystems_data.get_time(self.file_df,self.max_current)
+        self.time_smaller_current = getting_subsystems_data.get_time(self.file_df,15)
+        self.foil_number = getting_subsystems_data.get_foil_number(self.file_df,self.max_current) 
+        self.probe_current = getting_subsystems_data.get_probe_current(self.file_df)
+        self.df_subsystem_source = getting_subsystems_dataframes.get_subsystems_dataframe_source(self)
+        self.df_subsystem_vacuum = getting_subsystems_dataframes.get_subsystems_dataframe_vacuum(self)
+        self.df_subsystem_magnet = getting_subsystems_dataframes.get_subsystems_dataframe_magnet(self)
+        self.df_subsystem_rf = getting_subsystems_dataframes.get_subsystems_dataframe_rf(self)
+        self.df_subsystem_rf_sparks = getting_subsystems_dataframes.get_subsystems_dataframe_rf_sparks(self)
+        self.df_subsystem_extraction = getting_subsystems_dataframes.get_subsystems_dataframe_extraction(self)
+        self.df_subsystem_beam = getting_subsystems_dataframes.get_subsystems_dataframe_beam(self)
+        self.df_subsystem_pressure = getting_subsystems_dataframes.get_subsystems_dataframe_pressure(self) 
+        self.df_subsystem_pressure_irradiation = getting_subsystems_dataframes.get_subsystems_dataframe_pressure_irradiation(self) 
+        #
+        self.sparks_dee_1 = getting_subsystems_data.get_sparks_numbers(self,"Dee_1_kV")
+        self.sparks_dee_2 = getting_subsystems_data.get_sparks_numbers(self,"Dee_2_kV")
         self.sparks_number = len(self.sparks_dee_1) + len(self.sparks_dee_2)
-        # distance to find resonance
-        self.initial_flap_1,self.resonance_flap_1,self.distance_flap_1 = get_resonance_speed(self,"Flap1_pos","Dee_1_kV")
-        self.initial_flap_2,self.resonance_flap_2,self.distance_flap_2 = get_resonance_speed(self,"Flap2_pos","Dee_2_kV")
-        # 
-        self.average_instant_speed_1, self.max_instant_speed_1, self.std_instant_speed_1 = get_instant_and_average_speed(self,"Flap1_pos")
-        self.average_instant_speed_2, self.max_instant_speed_2, self.std_instant_speed_2 = get_instant_and_average_speed(self,"Flap2_pos")
-        #
-        #
-        #index_ending_flap = (self.df_subsystem_rf_sparks.Flap1_pos[self.df_subsystem_rf_sparks.Dee_1_kV > 0].index[-1])
-        foil_number = np.average((self.df_subsystem_rf.Foil_No))
-        self.df_subsystem_extraction = getting_subsystems_alt.get_subsystems_dataframe_extraction(self)
-        self.df_subsystem_beam = getting_subsystems_alt.get_subsystems_dataframe_beam(self)
-        self.df_subsystem_pressure = getting_subsystems_alt.get_subsystems_dataframe_pressure(self) 
-        self.df_subsystem_pressure_irradiation = getting_subsystems_alt.get_subsystems_dataframe_pressure_irradiation(self) 
-        self.df_isochronism = getting_subsystems_data_alt.get_isochronism(self.file_df)
-        #[self.probe_current,self.ion_source_current,self.source_performance,self.source_performance_std] = getting_subsystems_data_alt.get_ion_source_performance(self.file_df) #  
-        # Adds dataframe to previous dataframes in case it has been already oppened,
-
+        self.initial_flap_1,self.resonance_flap_1,self.distance_flap_1 = getting_subsystems_data.get_resonance_speed(self,"Flap1_pos","Dee_1_kV")
+        self.initial_flap_2,self.resonance_flap_2,self.distance_flap_2 = getting_subsystems_data.get_resonance_speed(self,"Flap2_pos","Dee_2_kV")
+        self.average_instant_speed_1, self.max_instant_speed_1, self.std_instant_speed_1 = getting_subsystems_data.get_instant_and_average_speed(self,"Flap1_pos")
+        self.average_instant_speed_2, self.max_instant_speed_2, self.std_instant_speed_2 = getting_subsystems_data.get_instant_and_average_speed(self,"Flap2_pos")
+        
 def file_open_summary(self):
         getting_summaries_alt.get_summary_ion_source(self)
         getting_summaries_alt.get_summary_vacuum(self)
@@ -85,15 +73,8 @@ def file_open_summary(self):
         getting_summaries_alt.get_summary_beam(self)
         getting_summaries_alt.get_summary_volume(self)
         getting_summaries_alt.get_filling_volume(self,0) 
-        getting_subsystems_data_alt.get_transmission(self)
-        getting_subsystems_data_alt.get_pressure_fluctuations(self,0)        
+        getting_subsystems_data.get_transmission(self)
+        getting_subsystems_data.get_pressure_fluctuations(self,0)        
         self.voltage_limit = (0.8*(self.df_rf.DEE1_VOLTAGE_AVE))  
         self.voltage_values = ["Dee_1_kV","Dee_2_kV"] 
-        print ("SUMMARY RF!!!!!!")
-        print (self.df_rf)   
-        #self.voltage_dee_1 = getting_sparks(self,self.voltage_values[0])
-        #self.voltage_dee_2 = getting_sparks(self,self.voltage_values[1])
 
-def getting_sparks(self,voltage_value):
-        voltage_dee = self.df_subsystem_rf_sparks.Dee_1_kV[getattr(self.df_subsystem_rf_sparks,voltage_value) < float(self.voltage_limit.iloc[self.current_row])]
-        return (voltage_dee)
