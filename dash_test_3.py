@@ -224,6 +224,12 @@ def getting_statistics_values(name,df,limits,flag):
         verification = setting_status(std_value,limits)
     elif flag == 5:
         verification = setting_status(max_value,limits)
+    elif flag == 6:
+        average_value = str(round(np.average(getattr(df,name)[getattr(df,name)>0].astype(float)),1))
+        std_value = str(round(np.std(getattr(df,name)[getattr(df,name)>0].astype(float)),1))
+        max_value = str(round(np.max(getattr(df,name)[getattr(df,name)>0].astype(float)),1))
+        min_value = str(round(np.min(getattr(df,name)[getattr(df,name)>0].astype(float)),1))
+        verification = setting_status(average_value,limits)
     statistics = [average_value,std_value,max_value,min_value,verification]
     return statistics
 
@@ -248,27 +254,27 @@ def computing_reference_values(name):
     flap1 = getting_statistics_values("FLAP1_AVE",cyclotron_information.df_rf,[5,10],1)
     flap2 = getting_statistics_values("FLAP2_AVE",cyclotron_information.df_rf,[5,10],1)
     sparks = getting_statistics_values("SPARKS_AVE",cyclotron_information.df_rf,[1,2],0)
-    volume_filling = getting_statistics_values('RELATIVE_VOLUME_AVE',cyclotron_information.df_filling_volume,[15,20],0)
+    volume_filling = getting_statistics_values('RELATIVE_VOLUME_AVE',cyclotron_information.df_filling_volume,[18,20],6)
     probe = getting_statistics_values("PROBE_AVE",cyclotron_information.df_beam,[1,3],0)
     source_performance_ave = ratio_source[0]
-    values = [["Ion Source","Ion Source performance",ratio_source[-1],ratio_source[0],(ratio_source[1]),(ratio_source[2]),(ratio_source[3]),"mA/uA"],
-    ["Ion Source","Ion Source current",current_source[-1],current_source[0],current_source[1],current_source[2],current_source[3],"mA"],
-    ["Ion Source", "H flow", hflow[-1],hflow[0],hflow[1],hflow[2],hflow[3],"sccm"],
-    ["Vacuum","Pressure",vacuum_pressure[-1],vacuum_pressure[0],vacuum_pressure[1],vacuum_pressure[2],vacuum_pressure[3],"10e-5 mbar"],
-    ["Vacuum ","Transmission",transmission[-1],transmission[0],transmission[1],transmission[2],transmission[3],"%"],
-    ["Beam", "I foil", foil_current[-1],foil_current[0],foil_current[1],foil_current[2],foil_current[3],"uA"],
-    ["Beam","I target", target_current[-1],target_current[0],target_current[1],target_current[2],target_current[3],"uA"],
-    ["Beam","I collimators", relative_coll[-1],relative_coll[0],relative_coll[1],relative_coll[2],relative_coll[3],"%"],
-    ["Beam", "Extraction losses",extraction_losses[-1],extraction_losses[0],extraction_losses[1],extraction_losses[2],extraction_losses[3],"%"],
-    ["Beam","Probe current", probe[-1],probe[0],probe[1],probe[2],probe[3],"uA"],
-    ["RF", "Reflected power",reflected_power[-1],reflected_power[0],reflected_power[1],reflected_power[2],reflected_power[3] ,"W"],
-    ["RF","Forwarded power",forwarded_power[-1],forwarded_power[0],forwarded_power[1],forwarded_power[2],forwarded_power[3] ,"kW"],
-    ["RF", "Sparks",sparks[-1],sparks[0],sparks[1],sparks[2],sparks[3],"-"],  
-    ["RF", "Flap 1",flap1[-1],flap1[0],flap1[1],flap1[2],flap1[3],"%"],
-    ["RF", "Flap 1",flap2[-1],flap2[0],flap2[1],flap2[2],flap2[3],"%"],
-    ["Target","Pressure irradiation",pressure_irradiation[-1],pressure_irradiation[0],pressure_irradiation[1],pressure_irradiation[2],pressure_irradiation[3], "Psi"],
-    ["Target","Relative volume filling",volume_filling[-1],volume_filling[0],volume_filling[1],volume_filling[2],volume_filling[3],"%"]]
-    dff = pd.DataFrame(values,columns=["Subsystem","Parameter","Overall","Value","Deviation","Max","Min","Unit"])
+    values = [["Ion Source","Ion Source performance (probe)",ratio_source[-1],ratio_source[0],(ratio_source[1]),(ratio_source[2]),(ratio_source[3]),0,3,"mA/uA"],
+    ["Ion Source","Ion Source current",current_source[-1],current_source[0],current_source[1],current_source[2],current_source[3],0,450,"mA"],
+    ["Ion Source", "H flow", hflow[-1],hflow[0],hflow[1],hflow[2],hflow[3],"0","0.2 (deviation)","sccm"],
+    ["Vacuum","Pressure",vacuum_pressure[-1],vacuum_pressure[0],vacuum_pressure[1],vacuum_pressure[2],vacuum_pressure[3],0,1.65,"10e-5 mbar"],
+    ["Vacuum ","Transmission",transmission[-1],transmission[0],transmission[1],transmission[2],transmission[3],65,100,"%"],
+    ["Beam", "I foil", foil_current[-1],foil_current[0],foil_current[1],foil_current[2],foil_current[3],"0","10 (deviation)","uA"],
+    ["Beam","I target", target_current[-1],target_current[0],target_current[1],target_current[2],target_current[3],"0","10 (deviation)","uA"],
+    ["Beam","I collimators", relative_coll[-1],relative_coll[0],relative_coll[1],relative_coll[2],relative_coll[3],8,20,"%"],
+    ["Beam", "Extraction losses",extraction_losses[-1],extraction_losses[0],extraction_losses[1],extraction_losses[2],extraction_losses[3],0,0.5,"%"],
+    ["Beam","Probe current", probe[-1],probe[0],probe[1],probe[2],probe[3],0,0.5,"uA"],
+    ["RF", "Reflected power",reflected_power[-1],reflected_power[0],reflected_power[1],reflected_power[2],reflected_power[3],0,300 ,"W"],
+    ["RF","Forwarded power",forwarded_power[-1],forwarded_power[0],forwarded_power[1],forwarded_power[2],forwarded_power[3],0,12 ,"kW"],
+    ["RF", "Sparks",sparks[-1],sparks[0],sparks[1],sparks[2],sparks[3],0,0,"-"],  
+    ["RF", "Flap 1",flap1[-1],flap1[0],flap1[1],flap1[2],flap1[3],5,100,"%"],
+    ["RF", "Flap 2",flap2[-1],flap2[0],flap2[1],flap2[2],flap2[3],5,100,"%"],
+    ["Target","Pressure irradiation",pressure_irradiation[-1],pressure_irradiation[0],pressure_irradiation[1],pressure_irradiation[2],pressure_irradiation[3], 425,450,"Psi"],
+    ["Target","Relative volume filling",volume_filling[-1],volume_filling[0],volume_filling[1],volume_filling[2],volume_filling[3],15,20,"Psi"]]
+    dff = pd.DataFrame(values,columns=["Subsystem","Parameter","Overall","Value","Deviation","Max","Min","Reference min","Reference max","Unit"])
     print ("DF CYCLOTRON")
     print (dff)
     return dff
