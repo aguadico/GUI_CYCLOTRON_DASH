@@ -26,8 +26,8 @@ def get_instant_and_average_speed(self,flap_number):
     average_speed = (final_average_position-initial_average_position)/(3*len(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float)))*3600
     instant_speed = ((np.array(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float))[:-1]-np.array(getattr(self.df_subsystem_rf_sparks[self.df_subsystem_rf_sparks.Arc_I>0],flap_number).astype(float))[1:])/3)
     average_instant_speed = np.average(average_speed)
-    max_instant_speed = np.max(instant_speed)
-    std_instant_speed = np.std(instant_speed)
+    max_instant_speed     = np.max(instant_speed)
+    std_instant_speed     = np.std(instant_speed)
     return (average_instant_speed,max_instant_speed,std_instant_speed)
 
 def get_resonance_speed(self,flap_number,dee_number):  
@@ -41,8 +41,8 @@ def get_resonance_speed(self,flap_number,dee_number):
 
 def file_open(self):
         [self.target_current,self.max_current] = getting_subsystems_data.get_target_parameters(self.file_df)
-        self.low_source_current = getting_subsystems_data.get_source_parameters_limit(self.file_df)
-        self.time = getting_subsystems_data.get_time(self.file_df,self.max_current)
+        self.low_source_current   = getting_subsystems_data.get_source_parameters_limit(self.file_df)
+        self.time                 = getting_subsystems_data.get_time(self.file_df,self.max_current)
         self.time_smaller_current = getting_subsystems_data.get_time(self.file_df,15)
         self.foil_number = getting_subsystems_data.get_foil_number(self.file_df,self.max_current) 
         self.probe_current = getting_subsystems_data.get_probe_current(self.file_df)

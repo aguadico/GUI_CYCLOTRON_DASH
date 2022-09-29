@@ -11,8 +11,8 @@ def get_summary_ion_source(self):
     foil_number = np.average(self.df_subsystem_source.Foil_No)
     ave_source_current,std_source_current,max_source_current,min_source_current = getting_subsystems_data.get_statistic_values(source_current)  
     ave_source_voltage,std_source_voltage,max_source_voltage,min_source_voltage = getting_subsystems_data.get_statistic_values(source_voltage)  
-    ave_gas_flow,std_gas_flow,max_gas_flow,min_gas_flow = getting_subsystems_data.get_statistic_values(gas_flow) 
-    ave_ratio_current,std_ratio_current,max_ratio_current,min_ratio_current = getting_subsystems_data.get_statistic_values(ratio_current)
+    ave_gas_flow,std_gas_flow,max_gas_flow,min_gas_flow                         = getting_subsystems_data.get_statistic_values(gas_flow) 
+    ave_ratio_current,std_ratio_current,max_ratio_current,min_ratio_current     = getting_subsystems_data.get_statistic_values(ratio_current)
     df_source_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,
     float(max_source_current),float(min_source_current),float(ave_source_current),float(std_source_current),
     float(max_source_voltage),float(min_source_voltage),float(ave_source_voltage),float(std_source_voltage),
@@ -107,13 +107,13 @@ def get_summary_rf(self):
     flap1_pos = self.df_subsystem_rf.Flap1_pos
     flap2_pos = self.df_subsystem_rf.Flap2_pos
     foil_number = np.average((self.df_subsystem_rf.Foil_No))
-    ave_dee1_voltage,std_dee1_voltage,max_dee1_voltage,min_dee1_voltage = getting_subsystems_data.get_statistic_values(dee1_voltage)   
-    ave_dee2_voltage,std_dee2_voltage,max_dee2_voltage,min_dee2_voltage = getting_subsystems_data.get_statistic_values(dee2_voltage)
+    ave_dee1_voltage,std_dee1_voltage,max_dee1_voltage,min_dee1_voltage             = getting_subsystems_data.get_statistic_values(dee1_voltage)   
+    ave_dee2_voltage,std_dee2_voltage,max_dee2_voltage,min_dee2_voltage             = getting_subsystems_data.get_statistic_values(dee2_voltage)
     ave_forwarded_power,std_forwarded_power,max_forwarded_power,min_forwarded_power = getting_subsystems_data.get_statistic_values(forwarded_power)
     ave_reflected_power,std_reflected_power,max_reflected_power,min_reflected_power = getting_subsystems_data.get_statistic_values(reflected_power)
-    ave_flap1_pos,std_flap1_pos,max_flap1_pos,min_flap1_pos = getting_subsystems_data.get_statistic_values(flap1_pos)
-    ave_flap2_pos,std_flap2_pos,max_flap2_pos,min_flap2_pos = getting_subsystems_data.get_statistic_values(flap2_pos)
-    ave_phase_load,std_phase_load,max_phase_load,min_phase_load = getting_subsystems_data.get_statistic_values(phase_load)  
+    ave_flap1_pos,std_flap1_pos,max_flap1_pos,min_flap1_pos                         = getting_subsystems_data.get_statistic_values(flap1_pos)
+    ave_flap2_pos,std_flap2_pos,max_flap2_pos,min_flap2_pos                         = getting_subsystems_data.get_statistic_values(flap2_pos)
+    ave_phase_load,std_phase_load,max_phase_load,min_phase_load                     = getting_subsystems_data.get_statistic_values(phase_load)  
     rf_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,max_dee1_voltage,min_dee1_voltage,ave_dee1_voltage,std_dee1_voltage,max_dee2_voltage,min_dee2_voltage,ave_dee2_voltage,std_dee2_voltage,
     max_forwarded_power,min_forwarded_power,ave_forwarded_power,std_forwarded_power,max_reflected_power,min_reflected_power,ave_reflected_power,std_reflected_power,max_phase_load,min_phase_load,ave_phase_load,std_phase_load,max_flap1_pos,
     min_flap1_pos,ave_flap1_pos,std_flap1_pos,
@@ -159,27 +159,27 @@ def get_summary_extraction(self):
 
 
 def get_summary_beam(self):
-    target_current = self.df_subsystem_beam.Target_I
+    target_current     = self.df_subsystem_beam.Target_I
     extraction_current = self.df_subsystem_beam.Foil_I 
-    collimator_r = self.df_subsystem_beam.Coll_r_I   
-    collimator_l = self.df_subsystem_beam.Coll_l_I  
-    collimator_r_rel = self.df_subsystem_beam.Coll_r_rel 
-    collimator_l_rel = self.df_subsystem_beam.Coll_l_rel
-    target_rel = self.df_subsystem_beam.Target_rel
-    extraction_losses = self.df_subsystem_beam.Extraction_losses
+    collimator_r       = self.df_subsystem_beam.Coll_r_I   
+    collimator_l       = self.df_subsystem_beam.Coll_l_I  
+    collimator_r_rel   = self.df_subsystem_beam.Coll_r_rel 
+    collimator_l_rel   = self.df_subsystem_beam.Coll_l_rel
+    target_rel         = self.df_subsystem_beam.Target_rel
+    extraction_losses  = self.df_subsystem_beam.Extraction_losses
     foil_number = np.average((self.df_subsystem_beam.Foil_No))
-    probe_current = self.df_subsystem_beam.Probe_I
+    probe_current      = self.df_subsystem_beam.Probe_I
     collimator_total_rel = collimator_r_rel + collimator_l_rel
-    ave_extraction_current,std_extraction_current,max_extraction_current,min_extraction_current = getting_subsystems_data.get_statistic_values(extraction_current)
-    ave_target_current,std_target_current,max_target_current,min_target_current = getting_subsystems_data.get_statistic_values(target_current)
-    ave_collimator_r,std_collimator_r, max_collimator_r, min_collimator_r = getting_subsystems_data.get_statistic_values(collimator_r)
-    ave_collimator_l,std_collimator_l, max_collimator_l, min_collimator_l = getting_subsystems_data.get_statistic_values(collimator_l)
-    ave_collimator_r_rel,std_collimator_r_rel, max_collimator_r_rel, min_collimator_r_rel = getting_subsystems_data.get_statistic_values(collimator_r_rel)
-    ave_collimator_l_rel,std_collimator_l_rel, max_collimator_l_rel, min_collimator_l_rel = getting_subsystems_data.get_statistic_values(collimator_l_rel)
+    ave_extraction_current,std_extraction_current,max_extraction_current,min_extraction_current           = getting_subsystems_data.get_statistic_values(extraction_current)
+    ave_target_current,std_target_current,max_target_current,min_target_current                           = getting_subsystems_data.get_statistic_values(target_current)
+    ave_collimator_r,std_collimator_r, max_collimator_r, min_collimator_r                                 = getting_subsystems_data.get_statistic_values(collimator_r)
+    ave_collimator_l,std_collimator_l, max_collimator_l, min_collimator_l                                 = getting_subsystems_data.get_statistic_values(collimator_l)
+    ave_collimator_r_rel,std_collimator_r_rel, max_collimator_r_rel, min_collimator_r_rel                 = getting_subsystems_data.get_statistic_values(collimator_r_rel)
+    ave_collimator_l_rel,std_collimator_l_rel, max_collimator_l_rel, min_collimator_l_rel                 = getting_subsystems_data.get_statistic_values(collimator_l_rel)
     ave_collimator_total_rel,std_collimator_total_rel, max_collimator_total_rel, min_collimator_total_rel = getting_subsystems_data.get_statistic_values(collimator_total_rel)
-    ave_target_rel,std_target_rel,max_target_rel,min_target_rel = getting_subsystems_data.get_statistic_values(target_rel)
-    ave_extraction_losses,std_extraction_losses,max_extraction_losses,min_extraction_losses = getting_subsystems_data.get_statistic_values(extraction_losses)
-    ave_probe,std_probe,max_probe,min_probe = getting_subsystems_data.get_statistic_values(probe_current)
+    ave_target_rel,std_target_rel,max_target_rel,min_target_rel                                           = getting_subsystems_data.get_statistic_values(target_rel)
+    ave_extraction_losses,std_extraction_losses,max_extraction_losses,min_extraction_losses               = getting_subsystems_data.get_statistic_values(extraction_losses)
+    ave_probe,std_probe,max_probe,min_probe                                                               = getting_subsystems_data.get_statistic_values(probe_current)
     beam_values = [[np.float(int(self.file_number)),self.date_stamp,self.target_number,foil_number,
     max_collimator_l,min_collimator_l, ave_collimator_l, std_collimator_l,
     max_collimator_r,min_collimator_r, ave_collimator_r, std_collimator_r,
@@ -202,21 +202,21 @@ def get_filling_volume(self,va):
         low_pressure = 0
     else:
         low_pressure = pressure_no_current[3:np.min(high_pressure.index)][pressure_no_current < 80]
-    high_pressure_ave = np.average(high_pressure)
-    high_pressure_std = np.std(high_pressure)
-    low_pressure_ave = np.average(low_pressure)
-    low_pressure_std = np.std(low_pressure)
+    high_pressure_ave        = np.average(high_pressure)
+    high_pressure_std        = np.std(high_pressure)
+    low_pressure_ave         = np.average(low_pressure)
+    low_pressure_std         = np.std(low_pressure)
     pressure_irradiation_ave = np.average(self.df_subsystem_pressure_irradiation.Target_P)
     pressure_irradiation_std = np.std(self.df_subsystem_pressure_irradiation.Target_P)
     foil_number = np.average((self.df_subsystem_vacuum.Foil_No))
     if float(self.file_df.Target_P[3]) < 100:
         va += 1
         values_filling = self.file_df.Target_P[(self.file_df.Target_P.astype(float) < 100) & (self.file_df.Target_P.astype(float) > 10)] 
-        initial_index = self.file_df.Target_P[self.file_df.Target_P.astype(float) > 105].index[0] 
-        p_values = self.file_df.Target_P[3:initial_index-1]
+        initial_index  = self.file_df.Target_P[self.file_df.Target_P.astype(float) > 105].index[0] 
+        p_values       = self.file_df.Target_P[3:initial_index-1]
         minimal_index = p_values[p_values.astype(float) == np.min(p_values.astype(float))].index[0]
         initial_pressure = float(self.file_df.Target_P[minimal_index])
-        final_pressure = float(self.file_df.Target_P[initial_index-1])
+        final_pressure   = float(self.file_df.Target_P[initial_index-1])
         relative_change = (final_pressure-initial_pressure)
         time_list = (va)
         #file = (float(file[:-4]))
@@ -224,7 +224,7 @@ def get_filling_volume(self,va):
         relative_change = 0
         time_list = 0
         initial_pressure = self.file_df.Target_P[3] 
-        final_pressure = self.file_df.Target_P[3] 
+        final_pressure   = self.file_df.Target_P[3] 
     filling_list = [[np.float(self.file_number),self.date_stamp,self.target_number,relative_change,0,high_pressure_ave,high_pressure_std,low_pressure_ave,low_pressure_std,pressure_irradiation_ave,
     pressure_irradiation_std]]
     df_filling_volume_i = pd.DataFrame(filling_list,columns=columns_names.COLUMNS_FILLING)
