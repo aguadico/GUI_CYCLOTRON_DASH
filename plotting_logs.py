@@ -20,7 +20,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 import sys
-sys.path.append("/Users/anagtv/GUI_CYCLOTRON_BOTH_TARGETS")
+sys.path.append("pwd")        #"/Users/anagtv/GUI_CYCLOTRON_BOTH_TARGETS")                 # he cambiado el de Ana por el prime Working directory
 import saving_trends_alt
 import columns_names
 import dash_table as dt
@@ -35,45 +35,62 @@ import app_layout
 import getting_subsystems_data
 import time
 
+
+# Añado plot de la Probe
+# Separo Colimadores (la suma) en coll bajo y coll alto
+# Separo apartado Beam en dos porque esta muy apretado todo
+#    Termino poniendo: Beam1: ion source, probe, y target.     Beam2: target, colls, relacion target/foil, perdidas extraccion
+
+
+
+#       Referencias de líneas de Amarillo, Rojo, Limite
 COLORS = ["#A0BBBC","#223A38","#497873"]
 REFERENCE_VALUE_DICTIONARY = {"CHOOSE":[[[]],[[]]],
 "SOURCE":[[[600,700,800]],[[120,130,140]],[[20,25,35]]],
-"BEAM":[[[600,700,800]],[[110,120,130]],[[20,25,35]],[[85,75,70]],[[0.5,10,100]]],
+"BEAM1":[[[600,700,800]],[[]],[[110,120,130]]],              #- añadir PROBE aqui: [[]],     -separo beam1: arc, probe, losses, beam2: target, collim, relative
+"BEAM2":[[[110,120,130]],[[13,17,20]],[[85,75,70]],[[0.5,10,100]]],        # he cambiado los valores de avisos de colimador
 "VACUUM":[[[600,700,800]],[[1.6,1.7,1.8]],[]],
 "RF":[[[]],[[10,5,0]],[[13,14,15],[0.5,1.5,3]]],
 "TARGET":[[[110,120,130]],[[450,460,480]],[]],
 "MAGNET":[[[]],[[]]]}
 
-
-ROW_NUMBER = {"CHOOSE":4,"SOURCE":4,"BEAM":5,"VACUUM":5,"RF":3,"TARGET":3,"MAGNET":1}
-
+# asigna cantidad de plots que va a mostrar en cada pestaña
+ROW_NUMBER = {"CHOOSE":4,"SOURCE":4,"BEAM1":3,"BEAM2":4,"VACUUM":5,"RF":3,"TARGET":3,"MAGNET":1}           #- añado una a beam, para la PROBE     -separo BEAM:6 en BEAM1:3 y BEAM2:3
+                        
+# columns set to each plot. aquí asigna los datos en cada plot
 COLUMNS_TO_PLOT = {"CHOOSE":[["PLOT_1"],["PLOT_2"],["PLOT_3"]],
 "SOURCE":[["Arc_I"],["Target_I"],["Collimators"],["Vacuum_mbar"]],
-"BEAM":[["Arc_I"],["Target_I"],["Collimators"],["Relative_target"],["Losses"]],
+"BEAM1":[["Arc_I"],["Probe_I"],["Target_I"]],           #- añado ["Probe-I"], aqui           - pongo los beam2 abajo y los beam1 arriba      
+"BEAM2":[["Target_I"],["Coll_l_I","Coll_r_I"],["Relative_target"],["Losses"]],
 "VACUUM":[["Arc_I"],["Vacuum_mbar"],["Gas_flow"]],
 "RF":[["Dee_1_kV","Dee_2_kV"],["Flap1_pos","Flap2_pos"],["RF_fwd_W","RF_refl_W"]],
 "TARGET":[["Target_I"],["Target_P"],["Extr_pos"]],
 "MAGNET":[["Magnet_I"],["Foil_I","Target_I","Coll_l_I"]]}
 
-HORIZONTAL_VALUES = {"CHOOSE":[["PLOT_1"],["PLOT_2"],["PLOT_3"]],
+HORIZONTAL_VALUES = {"CHOOSE":[["PLOT_1"],["PLOT_2"],["PLOT_3"]],   # tamaño de referencias de tiempo que coge. Para 2 datos en 3 plots: 3^2 = 9, no se por que
 "SOURCE":[["Time"]]*4,
-"BEAM":[["Time"]]*5,"VACUUM":[["Time"]]*3,"RF":[["Time"]*3]*3,"TARGET":[["Time"]]*3,"MAGNET":[["Time"],["Magnet_I","Magnet_I","Magnet_I"]]}
+"BEAM1":[["Time"]]*3,"BEAM2":[["Time"]*3]*4,"VACUUM":[["Time"]]*3,"RF":[["Time"]*3]*3,"TARGET":[["Time"]]*3,"MAGNET":[["Time"],["Magnet_I","Magnet_I","Magnet_I"]]}
+    #- añado una a beam, de 5 a 6, para la PROBE - separar beam
 
-DATAFRAME_TO_PLOT = {"CHOOSE":[["df_zero_individual"]]*3,
+DATAFRAME_TO_PLOT = {"CHOOSE":[["df_zero_individual"]]*3,           # tamaño de la matriz de datos que coge. Para 2 datos en 3 plots: 3^2 = 9
 "SOURCE":[["file_df"]]*4,
-"BEAM":[["file_df"]]*5,"VACUUM":[["file_df"]]*3,"RF":[["file_df"]*3]*3,"TARGET":[["file_df"]]*3,"MAGNET":[["file_df"],["df_isochronism","df_isochronism","df_isochronism"]]}
+"BEAM1":[["file_df"]]*3,"BEAM2":[["file_df"]*3]*4,"VACUUM":[["file_df"]]*3,"RF":[["file_df"]*3]*3,"TARGET":[["file_df"]]*3,"MAGNET":[["file_df"],["df_isochronism","df_isochronism","df_isochronism"]]}
+    #- añado una a beam, de 5 a 6, para la PROBE  - separar beam
 
-Y_LABEL = {"CHOOSE":[[" "]]*3,
+#  Naming each plot
+Y_LABEL = {"CHOOSE":[[" "]]*3,                  # nombre de la plot, el que sale a la izda del eje Y
 "SOURCE":[["Arc I [mA]"],["Target I [\u03bcA]"],["I Collimators [\u03bcA]"],["Vacuum Pressure [1e-5 mbar]"]],
-"BEAM":[["Arc I [mA]"],["Target I [\u03bcA]"],["Collimators [\u03bcA]"],["I target/I foil [%]"],["Extraction losses [%]"]],
+"BEAM1":[["Arc I [mA]"],["Probe I [\u03bcA]"],["Target I [\u03bcA]"]], 
+"BEAM2":[["Target I [\u03bcA]"],["Collimators [\u03bcA]","Collimators [\u03bcA]"],["I target/I foil [%]"],["Extraction losses [%]"]],       #- añado dentro de BEAM: ["Probe current [\u03bcA]"],    - separar beam
 "VACUUM":[["Arc I [mA]"],["Vacuum Pressure [1e-5 mbar]"],["Gas flow [sccm]"]],
 "RF":[["RF Voltage [kV]","RF Voltage [kV]"],["Flap [%]","Flap [%]"],["RF Power [kW]","RF Power [kW]"]],
 "TARGET":[["Target I [\u03bcA]"],["Pressure [psi]"],["Extraction position [%]"]],
 "MAGNET":[["Magnet I [A]"],["I [\u03bcA]","I [\u03bcA]","I [\u03bcA]"]]}
 
-LEGEND = {"CHOOSE":[[" "]]*3,
+LEGEND = {"CHOOSE":[[" "]]*3,                   # Nombre que se vera para cada paquete de datos (raton encima)
 "SOURCE":[["Source current"],["Target current"],["Collimators current"],["Vacuum"]],
-"BEAM":[["Source"],["Target"],["Collimators"],["Relative Target"],["Extraction losses"]],
+"BEAM1":[["Source"],["Probe"],["Target"]],       #- añado PROBE aqui   - separar beam
+"BEAM2":[["Target"],["Lower Collimator","Upper Collimator"],["Relative Target"],["Extraction losses"]],
 "VACUUM":[["Source current"],["Vacuum"],["Gas flow"]],
 "RF":[["Dee 1","Dee 2"],["Flap 1","Flap 2"],["Fwd","Rfl"]],
 "TARGET":[["Target current"],["Target pressure"],["Extraction"]],

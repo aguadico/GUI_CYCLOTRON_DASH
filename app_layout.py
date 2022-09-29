@@ -1,3 +1,5 @@
+# commented list of images (0) in line 71
+
 import json
 import dash
 import dash_core_components as dcc
@@ -20,7 +22,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 import sys
-sys.path.append("/Users/anagtv/GUI_CYCLOTRON_BOTH_TARGETS")
+sys.path.append("/Users/anagtv/GUI_CYCLOTRON_BOTH_TARGETS")           # quiza haya que cambiar esto
 import saving_trends_alt
 import columns_names
 import dash_table as dt
@@ -51,7 +53,7 @@ data = OrderedDict(
 values = [["Ion Source","Parameter","OK",0,0,0,0,0,0,"mA/uA"]]
 df = pd.DataFrame(values,columns=["Subsystem","Parameter","Overall","Value","Deviation","Max","Min","Reference min","Reference max","Unit"])
 columns = ["CHOOSE","SOURCE","MAGNET","BEAM","VACUUM","RF","RF_STABILITY","TARGET"]
-columns_logfile = ["CHOOSE","SOURCE","MAGNET","BEAM","VACUUM","RF","TARGET"]
+columns_logfile = ["CHOOSE","SOURCE","MAGNET","BEAM1","BEAM2","VACUUM","RF","TARGET"]
 columns_horizontal = ["DATE","FILE"]
 columns_layers = ["REMOVE REFERENCE VALUES","ADD REFERENCE VALUES"]
 
@@ -61,12 +63,12 @@ def b64_image(image_filename):
     return 'data:image/png;base64,' + base64.b64encode(image).decode('utf-8')
 
 
-image_directory = '/Users/anagtv/GUI_CYCLOTRON_DASH/'
+image_directory = 'pwd'             #'/Users/anagtv/GUI_CYCLOTRON_DASH/'                   # quizá haya que cambiar esto, lo he cambiado por PWD
 list_of_images = [os.path.basename(x) for x in glob.glob('{}*.png'.format(image_directory))]
 static_image_route = '/static/'
 
 print ("LIST OF IMAGES")
-print (list_of_images[0])
+# print (list_of_images[0])
 tab_style = {
     'borderBottom': '1px solid #d6d6d6',
     'padding': '20px',

@@ -83,15 +83,15 @@ def get_isochronism(data_df):
     if len(intial_values) == 0:
         minimum_value = int(max(data_df.Magnet_I))
         minimum_value_str = str(minimum_value)
-    final_index  = data_df.Magnet_I[data_df.Magnet_I == maximum_value_str].index[0]
+    final_index = data_df.Magnet_I[data_df.Magnet_I == maximum_value_str].index[0]
     intial_index = data_df.Magnet_I[data_df.Magnet_I == minimum_value_str].index[0]
     magnet_current = data_df.Magnet_I.loc[intial_index:final_index+1].astype(float)
     coll_current_l = data_df.Coll_l_I.loc[intial_index:final_index+1].astype(float)
     coll_current_r = data_df.Coll_r_I.loc[intial_index:final_index+1].astype(float)
     target_current = data_df.Target_I.loc[intial_index:final_index+1].astype(float)
-    foil_current   =   data_df.Foil_I.loc[intial_index:final_index+1].astype(float)
-    time           =     data_df.Time.loc[intial_index:final_index+1].astype(str)
-    df_column_isochronism    = ["Time","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I"]
+    foil_current = data_df.Foil_I.loc[intial_index:final_index+1].astype(float)
+    time = data_df.Time.loc[intial_index:final_index+1].astype(str)
+    df_column_isochronism = ["Time","Magnet_I","Foil_I","Coll_l_I","Target_I","Coll_r_I"]
     df_subsystem_values_beam = [time,magnet_current,foil_current,coll_current_l,target_current,coll_current_r]
     df_isochronism = pd.concat(df_subsystem_values_beam,axis=1,keys=df_column_isochronism)
     #print ("ISOCHRONISM!!!!")
@@ -117,7 +117,7 @@ def get_collimator_parameters(excel_data_df,current):
 
 def get_source_parameters(excel_data_df,current):
     source_voltage = excel_data_df.Arc_V[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
-    gas_flow    = excel_data_df.Gas_flow[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
+    gas_flow = excel_data_df.Gas_flow[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     source_current = excel_data_df.Arc_I[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     return source_voltage,source_current,gas_flow
 
@@ -127,9 +127,9 @@ def get_rf_parameters(excel_data_df,current):
     return dee1_voltage,dee2_voltage
 
 def get_rf_parameters_power(excel_data_df,current):
-    forwarded_power  = excel_data_df.RF_fwd_W[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
+    forwarded_power = excel_data_df.RF_fwd_W[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     reflected_power = excel_data_df.RF_refl_W[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
-    phase_load     = excel_data_df.Phase_load[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
+    phase_load = excel_data_df.Phase_load[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     return forwarded_power,reflected_power,phase_load
 
 def get_rf_parameters_sparks(excel_data_df):
@@ -138,9 +138,9 @@ def get_rf_parameters_sparks(excel_data_df):
     return dee1_voltage,dee2_voltage
 
 def get_rf_parameters_power_sparks(excel_data_df):
-    forwarded_power  = excel_data_df.RF_fwd_W[excel_data_df['Arc_I'].astype(float)].astype(float)
+    forwarded_power = excel_data_df.RF_fwd_W[excel_data_df['Arc_I'].astype(float)].astype(float)
     reflected_power = excel_data_df.RF_refl_W[excel_data_df['Arc_I'].astype(float)].astype(float)
-    phase_load     = excel_data_df.Phase_load[excel_data_df['Arc_I'].astype(float)].astype(float)
+    phase_load = excel_data_df.Phase_load[excel_data_df['Arc_I'].astype(float)].astype(float)
     return forwarded_power,reflected_power,phase_load
 
 def get_rf_parameters_flaps_sparks(excel_data_df):
@@ -161,7 +161,7 @@ def get_target_pressure(excel_data_df,current):
     target_pressure = excel_data_df.Target_P.astype(float)
     return target_pressure
 
-def get_target_pressure_irradiation(excel_data_df,current):                                 # no entiendo por que estos ¿factores de correccion? (0,85, -0,05)
+def get_target_pressure_irradiation(excel_data_df,current):
     max_current = 0.85*(np.max(excel_data_df['Target_I'].astype(float)))
     target_pressure = excel_data_df.Target_P[excel_data_df['Target_I'].astype(float) > float(max_current)].astype(float)
     return target_pressure
@@ -181,7 +181,7 @@ def get_extraction_parameters(excel_data_df,current):
 
 def get_extraction_parameters_position(excel_data_df,current):
     carousel_position = excel_data_df.Extr_pos[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
-    balance_position   = excel_data_df.Balance[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
+    balance_position = excel_data_df.Balance[excel_data_df['Target_I'].astype(float) > float(current)].astype(float)
     return carousel_position,balance_position
 
 def get_vacuum_parameters(excel_data_df,current):
@@ -192,11 +192,11 @@ def get_pressure_fluctuations(self,va):
     if float(self.file_df.Target_P[3]) < 100:
          va += 1
          values_filling = self.file_df.Target_P[self.file_df.Target_P.astype(float) < 100] 
-         initial_index  = self.file_df.Target_P[self.file_df.Target_P.astype(float) > 100].index[0] 
-         p_values       = self.file_df.Target_P[3:initial_index-1]
-         minimal_index  = p_values[p_values.astype(float) == np.min(p_values.astype(float))].index[0]
+         initial_index = self.file_df.Target_P[self.file_df.Target_P.astype(float) > 100].index[0] 
+         p_values = self.file_df.Target_P[3:initial_index-1]
+         minimal_index = p_values[p_values.astype(float) == np.min(p_values.astype(float))].index[0]
          initial_pressure = float(self.file_df.Target_P[minimal_index])
-         final_pressure   = float(self.file_df.Target_P[initial_index-1])
+         final_pressure = float(self.file_df.Target_P[initial_index-1])
          relative_change = (final_pressure-initial_pressure)/final_pressure
          time_list = va
          initial_pressure_fluctuations = ((float(initial_pressure) - float(self.file_df.Target_P[3]))*100/float(self.file_df.Target_P[3]))

@@ -54,7 +54,7 @@ def get_summary_volume(self):
 
 
 def get_hour_minute_seconds(total_time,delta):
-    hour = int(total_time.split(":")[0])+delta
+    hour   = int(total_time.split(":")[0])+delta
     minute = int(total_time.split(":")[1])
     second = int(total_time.split(":")[2])
     time_seconds = (hour*3600+minute*60+second)

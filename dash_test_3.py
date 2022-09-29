@@ -1,11 +1,27 @@
+
+# for referral, see: https://plotly.com/python/
+
+# required extensions: (copy command in terminal)
+#   pip install dash      
+#   pip install dash-extensions
+#   pip install dash-bootstrap-components
+#   pip install jupyter-dash
+#   pip install pandas
+#   pip install tfs-pandas
+#   pip install matplotlib
+
+# for external programs: (needed to run this one too)
+#   pip install scipy
+#   pip install ipywidgets
+
 import json
-import dash
+import dash                                         
 import dash_core_components as dcc
-import dash_bootstrap_components as dbc
+import dash_bootstrap_components as dbc             
 import dash_html_components as html
-from jupyter_dash import JupyterDash
+from jupyter_dash import JupyterDash                
 from dash.dependencies import Input, Output,State
-import plotly.express as px
+import plotly.express as px                         
 import pandas as pd
 import tfs
 import base64
@@ -20,7 +36,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 import sys
-sys.path.append("/Users/anagtv/GUI_CYCLOTRON_BOTH_TARGETS")
+sys.path.append("/Users/anagtv/GUI_CYCLOTRON_BOTH_TARGETS")         # cambiable?
 import saving_trends_alt
 import columns_names
 import dash_table as dt
@@ -68,20 +84,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app.layout = app_layout.layout
 
-
-COLUMNS_TO_PLOT = {"FOILS_1":["CUMULATIVE_TARGET_1_FOIL_1","CUMULATIVE_TARGET_1_FOIL_2","CUMULATIVE_TARGET_1_FOIL_3","CUMULATIVE_TARGET_1_FOIL_4","CUMULATIVE_TARGET_1_FOIL_5","CUMULATIVE_TARGET_1_FOIL_6"],
-"FOILS_2":["CUMULATIVE_TARGET_2_FOIL_1","CUMULATIVE_TARGET_2_FOIL_2","CUMULATIVE_TARGET_2_FOIL_3","CUMULATIVE_TARGET_2_FOIL_4","CUMULATIVE_TARGET_2_FOIL_5","CUMULATIVE_TARGET_2_FOIL_6"],
-"TARGET_COLLIMATORS_1":["CUMULATIVE_TARGET_1","CUMULATIVE_CURRENT_COLL_R_1","CUMULATIVE_CURRENT_COLL_L_1"],
-"TARGET_COLLIMATORS_2":["CUMULATIVE_TARGET_2","CUMULATIVE_CURRENT_COLL_R_2","CUMULATIVE_CURRENT_COLL_L_2"],
-"SOURCE_TARGETS":["CUMULATIVE_SOURCE","CUMULATIVE_TARGET_1","CUMULATIVE_TARGET_2"],
-}
-
-TEXT_TO_PLOT = {"FOILS_1":["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"],
-"FOILS_2":["Foil 1 [Ah]","Foil 2 [mAh]","Foil 3 [mAh]","Foil 4 [Ah]","Foil 5 [mAh]","Foil 6 [mAh]"],
-"TARGET_COLLIMATORS_1":["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"],
-"TARGET_COLLIMATORS_2":["Target [mAh]","Collimator upper [uAh]","Collimator lower [uAh]"],
-"SOURCE_TARGETS":["Source [Ah]","Target Position " + str(cyclotron_information.values_targets[0]) +  " [mAh]","Target Position "+ str(cyclotron_information.values_targets[1]) + " [mAh]"],
-}
+# aqui´ iban columns to plot y text to plot
 
 
 @app.callback(
@@ -111,6 +114,21 @@ def display_time_series(ticker,ticker_horizontal,ticker_layer,list_of_contents,t
     fig = cyclotron_information.plotting_statistics(ticker,ticker_horizontal,ticker_layer)
     fig.update_layout(height=1500)
     return fig
+
+
+COLUMNS_TO_PLOT = {"FOILS_1":["CUMULATIVE_TARGET_1_FOIL_1","CUMULATIVE_TARGET_1_FOIL_2","CUMULATIVE_TARGET_1_FOIL_3","CUMULATIVE_TARGET_1_FOIL_4","CUMULATIVE_TARGET_1_FOIL_5","CUMULATIVE_TARGET_1_FOIL_6"],
+"FOILS_2":["CUMULATIVE_TARGET_2_FOIL_1","CUMULATIVE_TARGET_2_FOIL_2","CUMULATIVE_TARGET_2_FOIL_3","CUMULATIVE_TARGET_2_FOIL_4","CUMULATIVE_TARGET_2_FOIL_5","CUMULATIVE_TARGET_2_FOIL_6"],
+"TARGET_COLLIMATORS_1":["CUMULATIVE_TARGET_1","CUMULATIVE_CURRENT_COLL_R_1","CUMULATIVE_CURRENT_COLL_L_1"],
+"TARGET_COLLIMATORS_2":["CUMULATIVE_TARGET_2","CUMULATIVE_CURRENT_COLL_R_2","CUMULATIVE_CURRENT_COLL_L_2"],
+"SOURCE_TARGETS":["CUMULATIVE_SOURCE","CUMULATIVE_TARGET_1","CUMULATIVE_TARGET_2"],
+}
+
+TEXT_TO_PLOT = {"FOILS_1":["Foil 1 [\u03bcAh]","Foil 2 [\u03bcAh]","Foil 3 [\u03bcAh]","Foil 4 [\u03bcAh]","Foil 5 [\u03bcAh]","Foil 6 [\u03bcAh]"],
+"FOILS_2":["Foil 1 [\u03bcAh]","Foil 2 [\u03bcAh]","Foil 3 [\u03bcAh]","Foil 4 [\u03bcAh]","Foil 5 [\u03bcAh]","Foil 6 [\u03bcAh]"],
+"TARGET_COLLIMATORS_1":["Target [mAh]","Collimator upper [\u03bcAh]","Collimator lower [\u03bcAh]"],
+"TARGET_COLLIMATORS_2":["Target [mAh]","Collimator upper [\u03bcAh]","Collimator lower [\u03bcAh]"],
+"SOURCE_TARGETS":["Source [Ah]","Target Position " + str(cyclotron_information.values_targets[0]) +  " [mAh]","Target Position "+ str(cyclotron_information.values_targets[1]) + " [mAh]"],
+}
 
 
 @app.callback(
@@ -198,6 +216,8 @@ def setting_status_inverse(name,limits):
         status = "Warning"
     return status
 
+#       COMPROBATIONS OF VALUES "COMPONENT LIFETIME" FOR WARNINGS & DANGERS
+
 def getting_statistics_values(name,df,limits,flag):
     average_value = str(round(np.average(getattr(df,name).astype(float)),1))
     std_value = str(round(np.std(getattr(df,name).astype(float)),1))
@@ -216,7 +236,7 @@ def getting_statistics_values(name,df,limits,flag):
            verification = "OK"
         elif verification_up == "OK" and verification_down == "Warning":
            verification = "Warning"
-        elif verification_up == "Danger" and verification_down == "OK":
+        elif verification_up == "Warning" and verification_down == "OK":  
            verification = "Warning"
         else:
             verification = "Danger"
@@ -233,8 +253,8 @@ def getting_statistics_values(name,df,limits,flag):
     statistics = [average_value,std_value,max_value,min_value,verification]
     return statistics
 
-
 def computing_reference_values(name):
+    #       reference values for warnings, and flags (defined just above)
     reflected_power = getting_statistics_values("REFLECTED_POWER_W_AVE",cyclotron_information.df_rf,[300,500],0)
     forwarded_power = getting_statistics_values("FORWARD_POWER_AVE",cyclotron_information.df_rf,[13,14],0)
     transmission = getting_statistics_values("TRANSMISSION_AVE",cyclotron_information.df_transmission,[55,65],1)
@@ -248,15 +268,17 @@ def computing_reference_values(name):
     foil_current = getting_statistics_values("FOIL_CURRENT_MAX",cyclotron_information.df_beam,[120,125],0)
     extraction_losses = getting_statistics_values("EXTRACTION_LOSSES_AVE",cyclotron_information.df_beam,[2,5],0)
     relative_coll = getting_statistics_values("RELATIVE_COLL_CURRENT_AVE",cyclotron_information.df_beam,[[5,10],[20,25]],3)
-    pressure_irradiation = getting_statistics_values("PRESSURE_IRRADIATION_AVE",cyclotron_information.df_filling_volume,[[410.5,425],[450,464.5]],3)
+    pressure_irradiation = getting_statistics_values("PRESSURE_IRRADIATION_AVE",cyclotron_information.df_filling_volume,[[410.5,425],[450,465]],3)
     dee1_voltage = getting_statistics_values("DEE1_VOLTAGE_AVE",cyclotron_information.df_rf,[0],2)
     dee2_voltage = getting_statistics_values("DEE2_VOLTAGE_MAX",cyclotron_information.df_rf,[0],2)
     flap1 = getting_statistics_values("FLAP1_AVE",cyclotron_information.df_rf,[5,10],1)
     flap2 = getting_statistics_values("FLAP2_AVE",cyclotron_information.df_rf,[5,10],1)
     sparks = getting_statistics_values("SPARKS_AVE",cyclotron_information.df_rf,[1,2],0)
-    volume_filling = getting_statistics_values('RELATIVE_VOLUME_AVE',cyclotron_information.df_filling_volume,[18,20],6)
+    volume_filling = getting_statistics_values('RELATIVE_VOLUME_AVE',cyclotron_information.df_filling_volume,[30,35],6)     # ana: [18,20] de limites
     probe = getting_statistics_values("PROBE_AVE",cyclotron_information.df_beam,[1,3],0)
     source_performance_ave = ratio_source[0]
+
+    #       values shown inside the table
     values = [["Ion Source","Ion Source performance (probe)",ratio_source[-1],ratio_source[0],(ratio_source[1]),(ratio_source[2]),(ratio_source[3]),0,3,"mA/uA"],
     ["Ion Source","Ion Source current",current_source[-1],current_source[0],current_source[1],current_source[2],current_source[3],0,450,"mA"],
     ["Ion Source", "H flow", hflow[-1],hflow[0],hflow[1],hflow[2],hflow[3],"0","0.2 (deviation)","sccm"],
@@ -268,12 +290,12 @@ def computing_reference_values(name):
     ["Beam", "Extraction losses",extraction_losses[-1],extraction_losses[0],extraction_losses[1],extraction_losses[2],extraction_losses[3],0,0.5,"%"],
     ["Beam","Probe current", probe[-1],probe[0],probe[1],probe[2],probe[3],0,0.5,"uA"],
     ["RF", "Reflected power",reflected_power[-1],reflected_power[0],reflected_power[1],reflected_power[2],reflected_power[3],0,300 ,"W"],
-    ["RF","Forwarded power",forwarded_power[-1],forwarded_power[0],forwarded_power[1],forwarded_power[2],forwarded_power[3],0,12 ,"kW"],
+    ["RF","Forwarded power",forwarded_power[-1],forwarded_power[0],forwarded_power[1],forwarded_power[2],forwarded_power[3],0,14 ,"kW"],
     ["RF", "Sparks",sparks[-1],sparks[0],sparks[1],sparks[2],sparks[3],0,0,"-"],  
     ["RF", "Flap 1",flap1[-1],flap1[0],flap1[1],flap1[2],flap1[3],5,100,"%"],
     ["RF", "Flap 2",flap2[-1],flap2[0],flap2[1],flap2[2],flap2[3],5,100,"%"],
     ["Target","Pressure irradiation",pressure_irradiation[-1],pressure_irradiation[0],pressure_irradiation[1],pressure_irradiation[2],pressure_irradiation[3], 425,450,"Psi"],
-    ["Target","Relative volume filling",volume_filling[-1],volume_filling[0],volume_filling[1],volume_filling[2],volume_filling[3],15,20,"Psi"]]
+    ["Target","Relative volume filling",volume_filling[-1],volume_filling[0],volume_filling[1],volume_filling[2],volume_filling[3],15,35,"Psi"]]
     dff = pd.DataFrame(values,columns=["Subsystem","Parameter","Overall","Value","Deviation","Max","Min","Reference min","Reference max","Unit"])
     print ("DF CYCLOTRON")
     print (dff)
